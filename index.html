@@ -1,40 +1,1156 @@
 <!DOCTYPE html>
-<html> 
-    <head> 
-        <meta charset="utf-8"> 
-        <meta http-equiv="X-UA-Compatible" content="IE=edge"> 
-        <title>机器龙</title> 
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-         <link rel="stylesheet" href="styles.css">
-    </head>
-    <body> 
-        <div id="main-container"> 
-            <section id="first-id" class="page">  
-                <div> 
-                    <h1 id="user-name">Mr Foo -  机器龙程序编写</h1> 
-                </div> 
-           </section>
-           <section class="page"> 
-              <div id="first-div"> 
-                  <a href="https://github.com/foo-mr" target="_blank">Github</a>
-              </div> 
-           </section>
-           <section class="page">
-              <h2>机器龙</h2>
-              <ul id="qualifications-list">
-                   <div id="first-div"> 
-                  <a href="https://foo-mr.github.io/brightness/" target="_blank">读取亮度</a>
-                  <a href="https://foo-mr.github.io/open-close-mouth" target="_blank">开合嘴巴</a>
-                  <a href="https://foo-mr.github.io/melody" target="_blank">播放旋律</a>
-                  <a href="https://foo-mr.github.io/blinking" target="_blank">眼睛闪烁</a>
-                  <a href="https://foo-mr.github.io/full-dragon" target="_blank">机器龙程序</a>
-                  </div>
-              </ul> 
-           </section>
-           <section class="page">
-              </div>
-           </section>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher's Toolkit</title>
+    
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Load Confetti Library (for Lucky Draw) -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.0/dist/confetti.browser.js"></script>
+    
+    <!-- Load Inter Font (for Grouping) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Base and Layout Styles --- */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; /* Prevent body scrolling */
+        }
+        
+        .sidebar-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            font-medium;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease-in-out;
+            color: #374151; /* gray-700 */
+        }
+        .sidebar-btn:hover {
+            background-color: #f3f4f6; /* gray-100 */
+        }
+        .sidebar-btn.active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* Main content area */
+        #content-area {
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .app-content { 
+            display: none; /* Hidden by default */
+        }
+        .app-content.active { 
+            display: block; /* Shown when active */
+        }
+
+        /* --- Styles from index (2).html (Lucky Draw) --- */
+        .card {
+            background-color: #93c5fd; /* Default Blue-300 */
+            color: #1e3a8a; /* Default Blue-900 */
+            padding: 25px 50px;
+            border-radius: 10px;
+            font-size: 2.5em;
+            font-weight: bold;
+            min-width: 280px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: auto;
+            transition: all 0.5s ease; 
+        }
+        
+        /* Note: Scoped #resultCard to its app container */
+        #app-lucky-draw #resultCard.chosen-card {
+            background-color: #2563eb; /* Final Blue-600 */
+            color: white;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            opacity: 0; /* Start hidden for reveal */
+            animation: reveal-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes reveal-pop {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1.0); opacity: 1; }
+        }
+        
+        .name-tag {
+            display: flex;
+            align-items: center;
+            background-color: #dbeafe; /* Blue-100 */
+            color: #1e40af; /* Blue-800 */
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 600;
+            user-select: none;
+            cursor: default;
+            transition: background-color 0.2s;
+        }
+        .name-tag-remove {
+            margin-left: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            line-height: 1;
+            color: #9333ea; /* Purple-600 */
+            transition: color 0.2s;
+        }
+        .name-tag-remove:hover {
+            color: #7e22ce; /* Purple-700 */
+        }
+        
+        /* --- Styles from index (1).html (Grouping) --- */
+        
+        /* Page transitions within the grouping app */
+        #app-grouping .page { display: none; }
+        #app-grouping .page.active { display: block; }
+
+        #app-grouping #animationPage {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            z-index: 100;
+            overflow: hidden;
+        }
+        #app-grouping #nameSlotMachine {
+            position: relative;
+            width: 80%;
+            max-width: 600px;
+            height: 150px;
+            margin: 100px auto 20px;
+            border: 4px solid #e0e0e0;
+            border-radius: 12px;
+            background: #ffffff;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        #app-grouping #slotReel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            transition: top 0.1s ease-in-out;
+        }
+        #app-grouping .slotName {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 150px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+            text-align: center;
+            padding: 0 20px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #app-grouping #assignmentText {
+            text-align: center;
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #555;
+            height: 80px;
+        }
+
+        /* Timer Styles */
+        #app-grouping #timerContainer.retracted { transform: translateX(calc(100% - 3.5rem)); }
+        #app-grouping #timerContainer { transition: transform 0.3s ease-in-out; z-index: 50; }
+        #app-grouping #timerHandle { cursor: pointer; }
+        #app-grouping .timer-input-display {
+            letter-spacing: 0.1em;
+            cursor: text;
+        }
+        #app-grouping .timer-input-display:focus { outline: none; background-color: #f4f4f5; }
+
+        /* Group Card Colors */
+        .group-card-colors {
+            --color-bg: #e0e7ff; /* indigo-100 */
+            --color-text: #3730a3; /* indigo-800 */
+            --color-header-bg: #4f46e5; /* indigo-600 */
+            --color-header-text: #ffffff;
+        }
+        .group-color-1 { --color-bg: #dbeafe; --color-text: #1e40af; --color-header-bg: #2563eb; } /* blue */
+        .group-color-2 { --color-bg: #d1fae5; --color-text: #065f46; --color-header-bg: #10b981; } /* green */
+        .group-color-3 { --color-bg: #fef3c7; --color-text: #92400e; --color-header-bg: #f59e0b; } /* amber */
+        .group-color-4 { --color-bg: #fee2e2; --color-text: #991b1b; --color-header-bg: #ef4444; } /* red */
+        .group-color-5 { --color-bg: #f3e8ff; --color-text: #581c87; --color-header-bg: #9333ea; } /* purple */
+        .group-color-6 { --color-bg: #ffe4e6; --color-text: #9f1239; --color-header-bg: #e11d48; } /* rose */
+        .group-color-7 { --color-bg: #e0f2fe; --color-text: #075985; --color-header-bg: #0ea5e9; } /* sky */
+        .group-color-8 { --color-bg: #dcfce7; --color-text: #166534; --color-header-bg: #22c55e; } /* lime */
+
+        /* Grouping Tab Styles */
+        #app-grouping .tab-content { display: none; }
+        #app-grouping .tab-content.active { display: block; }
+        
+        /* Name Reveal Animation */
+        .name-reveal {
+            opacity: 0;
+            transform: translateY(15px) scale(0.95);
+            transition: opacity 0.4s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        .name-reveal.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex h-screen">
+
+    <!-- === Sidebar === -->
+    <div id="sidebar" class="w-56 flex-shrink-0 bg-white p-4 shadow-lg">
+        <h1 class="text-xl font-bold mb-6 text-center text-indigo-700">符老师工具箱</h1>
+        <ul class="space-y-2">
+            <li>
+                <button id="nav-lucky-draw" class="sidebar-btn active">
+                    ✨ 幸运抽奖
+                </button>
+            </li>
+            <li>
+                <button id="nav-grouping" class="sidebar-btn">
+                    🎉 随机分组
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <!-- === Content Area === -->
+    <div id="content-area" class="flex-1 p-4 md:p-8">
+        
+        <!-- === App 1: Lucky Draw === -->
+        <div id="app-lucky-draw" class="app-content active">
+            <!-- Content from index (2).html's #appContainer -->
+            <div id="appContainer" class="w-full max-w-xl bg-white p-6 md:p-8 rounded-xl shadow-2xl border border-gray-200 mx-auto">
+                <h1 class="text-3xl md:text-4xl font-extrabold text-blue-600 text-center mb-6">
+                    ✨ 幸运抽奖系统
+                </h1>
+        
+                <!-- HOME VIEW (Input Page) -->
+                <div id="homeView" class="flex flex-col">
+                    <div class="space-y-4 mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <h2 class="text-2xl font-semibold text-blue-800">汇入名单</h2>
+                        
+                        <div id="tagContainer" class="flex flex-wrap gap-2 p-2 min-h-[40px] border border-gray-300 rounded-lg bg-white">
+                            <!-- Name tags will be injected here -->
+                        </div>
+        
+                        <input type="text" id="nameInputBox" 
+                               class="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-base" 
+                               placeholder="Type names and press Enter, 或复制贴上名单...">
+                               
+                        <div class="flex justify-end">
+                            <button id="clearAllButton" class="text-sm px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300 shadow-md">
+                                清空名单
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mb-4">
+                        <button id="pickButton" disabled 
+                                class="bg-yellow-400 text-gray-800 font-extrabold py-4 px-10 text-2xl rounded-full transition duration-300 transform hover:scale-105 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
+                            开始抽奖！
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- RESULT VIEW (Animation Page) -->
+                <div id="resultView" class="hidden flex-col items-center min-h-[400px]">
+                    <h2 id="resultStatus" class="text-3xl font-bold text-gray-700 mb-8">抽奖进行中...</h2>
+        
+                    <div id="resultContainer" class="flex flex-col justify-center items-center h-[150px] mb-8">
+                        <div id="resultCard" class="card">
+                            <span id="chosenName"></span>
+                        </div>
+                    </div>
+                    
+                    <button id="goBackButton" class="mt-8 text-lg px-6 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition duration-300 shadow-md hidden">
+                        ← 返回
+                    </button>
+                </div>
+            </div>
+            <footer class="mt-8 text-gray-500 text-sm text-center">
+                Created by 符老师.
+            </footer>
         </div>
-     </body>
+
+        <!-- === App 2: Grouping === -->
+        <div id="app-grouping" class="app-content">
+            <!-- Content from index (1).html's body -->
+            
+            <!-- PAGE 1: SETUP -->
+            <div id="setupPage" class="page active">
+                <div class="min-h-screen flex items-center justify-center p-0 md:p-4">
+                    <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 w-full max-w-2xl">
+                        
+                        <div class="flex items-center justify-center mb-6">
+                            <span class="text-3xl mr-3">🎉</span>
+                            <h1 class="text-2xl font-bold text-gray-700">随机分组系统</h1>
+                        </div>
+        
+                        <div class="rounded-lg bg-gray-50 border border-gray-200 p-6 mb-6">
+                            <h2 class="text-xl font-semibold mb-4 text-gray-800">汇入名单</h2>
+                            <div id="nameDisplay" class="w-full min-h-[80px] bg-white border border-gray-300 rounded-lg p-3 flex flex-wrap gap-2 mb-3">
+                                <!-- Tags will be injected here -->
+                            </div>
+                            <input type="text" id="nameInputBox" placeholder="Type names and press Enter, 或复制贴上名单..." class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button id="clearButton" class="mt-4 w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                                Clear List
+                            </button>
+                        </div>
+                        
+                        <div class="rounded-lg bg-gray-50 border border-gray-200 p-6 mb-6">
+                            <h2 class="text-xl font-semibold mb-4 text-gray-800">分组选项</h2>
+        
+                            <div class="inline-flex mb-4">
+                                <button id="tabBtnGroup" class="px-4 py-2 font-medium rounded-l-lg bg-blue-600 text-white">
+                                    <span class="block text-sm">By Number of Groups</span>
+                                    <span class="block text-xs">多少组?</span>
+                                </button>
+                                <button id="tabBtnStudent" class="px-4 py-2 font-medium rounded-r-lg bg-white text-gray-700 border border-gray-300">
+                                    <span class="block text-sm">By Students per Group</span>
+                                    <span class="block text-xs">多少人一组?</span>
+                                </button>
+                            </div>
+        
+                            <div id="tabContentGroup" class="tab-content active">
+                                <label for="groupCount" class="block text-center text-lg font-medium text-gray-700 mb-3">多少组别?</label>
+                                <div class="flex items-center justify-center">
+                                    <button id="groupDecrement" class="w-12 h-12 text-2xl font-bold text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300">-</button>
+                                    <input type="number" id="groupCount" value="2" min="1" class="w-24 h-12 text-center text-2xl font-bold mx-4 border-none bg-transparent focus:outline-none" readonly>
+                                    <button id="groupIncrement" class="w-12 h-12 text-2xl font-bold text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300">+</button>
+                                </div>
+                            </div>
+        
+                            <div id="tabContentStudent" class="tab-content">
+                                <label for="studentCount" class="block text-center text-lg font-medium text-gray-700 mb-3">各组别多少人?</label>
+                                <div class="flex items-center justify-center">
+                                    <button id="studentDecrement" class="w-12 h-12 text-2xl font-bold text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300">-</button>
+                                    <input type="number" id="studentCount" value="2" min="1" class="w-24 h-12 text-center text-2xl font-bold mx-4 border-none bg-transparent focus:outline-none" readonly>
+                                    <button id="studentIncrement" class="w-12 h-12 text-2xl font-bold text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300">+</button>
+                                </div>
+                            </div>
+                        </div>
+        
+                        <button id="startButton" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold text-xl py-4 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">
+                            开始分组!
+                        </button>
+                        <p id="setupError" class="text-red-500 text-center mt-3 h-4"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PAGE 2: RESULTS -->
+            <div id="resultsPage" class="page">
+                <div class="container mx-auto p-4 md:p-8">
+                    <h1 class="text-4xl font-bold text-center mb-8">组别</h1>
+                    <div id="resultsContainer" class="flex flex-wrap justify-center gap-6">
+                        <!-- Group cards will be injected here -->
+                    </div>
+                    <div class="flex justify-center gap-4 mt-12">
+                        <button id="backButton" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                            返回
+                        </button>
+                        <button id="downloadButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                            下载
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ANIMATION OVERLAY (Still part of Grouping app) -->
+            <div id="animationPage">
+                <div id="nameSlotMachine">
+                    <div id="slotReel">
+                        <!-- Names will be injected here -->
+                    </div>
+                </div>
+                <div id="assignmentText">
+                    分组中...
+                </div>
+            </div>
+            
+            <!-- TIMER WIDGET (Still part of Grouping app) -->
+            <div id="timerContainer" class="fixed top-20 right-0 bg-white rounded-l-lg shadow-xl p-4 w-72 retracted">
+                <div id="timerHandle" class="absolute left-0 top-0 bottom-0 w-14 bg-gray-700 hover:bg-gray-800 rounded-l-lg flex items-center justify-center text-white">
+                    <span id="timerIcon">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="ml-14">
+                    <h3 class="text-xl font-bold text-gray-800 text-center mb-3">计时表</h3>
+                    <div tabindex="0" id="timerInputDisplay" class="timer-input-display w-full text-5xl font-mono text-center text-gray-900 bg-transparent rounded-lg p-2 mb-4">
+                        <span id="timerMin">00</span>:<span id="timerSec">00</span>
+                    </div>
+                    <div class="flex justify-center gap-2 mb-3">
+                        <button id="timerSet5" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-md text-sm" data-minutes="5">5m</button>
+                        <button id="timerSet10" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-md text-sm" data-minutes="10">10m</button>
+                        <button id="timerSet15" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-md text-sm" data-minutes="15">15m</button>
+                    </div>
+                    <div class="flex justify-center gap-2">
+                        <button id="timerStartStop" class="flex-1 py-2 bg-green-500 text-white rounded-lg font-semibold">开始</button>
+                        <button id="timerReset" class="flex-1 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold">重置</button>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+    </div>
+
+    <script>
+        // --- App 1: Lucky Draw Logic ---
+        function initLuckyDrawApp() {
+            // Scope all selectors to the lucky draw app's container
+            const appRoot = document.getElementById('app-lucky-draw');
+            if (!appRoot) return; 
+
+            const homeView = appRoot.querySelector('#homeView');
+            const resultView = appRoot.querySelector('#resultView');
+            const resultStatus = appRoot.querySelector('#resultStatus');
+            const nameInputBox = appRoot.querySelector('#nameInputBox');
+            const pickButton = appRoot.querySelector('#pickButton');
+            const clearAllButton = appRoot.querySelector('#clearAllButton');
+            const goBackButton = appRoot.querySelector('#goBackButton');
+            const chosenNameSpan = appRoot.querySelector('#chosenName');
+            const resultCard = appRoot.querySelector('#resultCard');
+            const tagContainer = appRoot.querySelector('#tagContainer');
+            
+            let currentStudentList = []; 
+            const REVEAL_DELAY_MS = 3000; 
+            const SHUFFLE_INTERVAL_START = 50; 
+            let shuffleInterval;
+            
+            // --- VIEW MANAGEMENT ---
+            function showView(viewId) {
+                if (viewId === 'homeView') {
+                    homeView.classList.remove('hidden');
+                    homeView.classList.add('flex');
+                    resultView.classList.add('hidden');
+                    resultView.classList.remove('flex');
+                    goBackButton.classList.add('hidden');
+                    resultCard.classList.remove('chosen-card');
+                    updateButtonState();
+                } else if (viewId === 'resultView') {
+                    homeView.classList.add('hidden');
+                    homeView.classList.remove('flex');
+                    resultView.classList.remove('hidden');
+                    resultView.classList.add('flex');
+                }
+            }
+            
+            // --- CONFETTI FUNCTION ---
+            function runConfetti() {
+                // Check if global 'confetti' function exists
+                if (typeof confetti === 'undefined') return;
+
+                confetti({
+                    particleCount: 150,
+                    spread: 90,
+                    origin: { y: 0.6 }
+                });
+                confetti({
+                    particleCount: 50,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 }
+                });
+                confetti({
+                    particleCount: 50,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 }
+                });
+            }
+
+            // --- Core Logic Functions ---
+            function updateButtonState() {
+                const isListReady = currentStudentList.length > 0;
+                pickButton.disabled = !isListReady;
+
+                if (!resultCard.classList.contains('chosen-card') && isListReady) {
+                    chosenNameSpan.textContent = "Ready to pick!";
+                } else if (!isListReady) {
+                    chosenNameSpan.textContent = "Waiting for List...";
+                }
+            }
+
+            function updateTagDisplay() {
+                tagContainer.innerHTML = ''; 
+                
+                if (currentStudentList.length === 0) {
+                    tagContainer.innerHTML = `
+                        <p class="text-gray-500 italic text-center w-full p-1">
+                            目前名单是空的，请新增.
+                        </p>
+                    `;
+                } else {
+                    currentStudentList.forEach((name, index) => {
+                        const tag = document.createElement('div');
+                        tag.classList.add('name-tag');
+                        tag.dataset.name = name;
+                        
+                        tag.innerHTML = `
+                            <span>${name}</span>
+                            <span class="name-tag-remove" data-index="${index}">&times;</span>
+                        `;
+                        tagContainer.appendChild(tag);
+                    });
+                }
+                updateButtonState();
+            }
+
+            function addName(name) {
+                name = name.trim();
+                if (name.length > 0 && !currentStudentList.includes(name)) {
+                    currentStudentList.push(name);
+                    currentStudentList.sort((a, b) => a.localeCompare(b)); 
+                    updateTagDisplay();
+                    resultCard.classList.remove('chosen-card');
+                }
+            }
+
+            function removeName(index) {
+                if (index >= 0 && index < currentStudentList.length) {
+                    currentStudentList.splice(index, 1);
+                    updateTagDisplay();
+                    resultCard.classList.remove('chosen-card');
+                }
+            }
+            
+            function clearAllParticipants() {
+                currentStudentList = []; 
+                nameInputBox.value = ''; 
+                updateTagDisplay(); 
+                resultCard.classList.remove('chosen-card'); 
+                chosenNameSpan.textContent = "Waiting for List..."; 
+                updateButtonState();
+            }
+
+            // --- Shuffle Logic ---
+            const startVisualShuffle = (names) => {
+                const randomIndex = Math.floor(Math.random() * names.length);
+                chosenNameSpan.textContent = names[randomIndex];
+            };
+
+            const runShuffleWithSlowdown = (names) => {
+                let currentInterval = SHUFFLE_INTERVAL_START;
+                
+                shuffleInterval = setInterval(() => startVisualShuffle(names), currentInterval);
+
+                setTimeout(() => {
+                    clearInterval(shuffleInterval);
+                    currentInterval = 150; 
+                    shuffleInterval = setInterval(() => startVisualShuffle(names), currentInterval);
+                }, 1000); 
+
+                setTimeout(() => {
+                    clearInterval(shuffleInterval);
+                    currentInterval = 400; 
+                    shuffleInterval = setInterval(() => startVisualShuffle(names), currentInterval);
+                }, 2000);
+            };
+
+            // --- Event Handlers ---
+            nameInputBox.addEventListener('paste', (event) => {
+                event.preventDefault();
+                const pastedText = (event.clipboardData || window.clipboardData).getData('text');
+                let finalNames = [];
+                const lines = pastedText.split(/\r?\n|\r/); 
+                
+                lines.forEach(line => {
+                    line.split(',').forEach(name => {
+                        const trimmedName = name.trim();
+                        if (trimmedName.length > 0) {
+                            finalNames.push(trimmedName);
+                        }
+                    });
+                });
+                finalNames.forEach(addName);
+                nameInputBox.value = ''; 
+                nameInputBox.focus();
+            });
+
+            nameInputBox.addEventListener('keyup', (event) => {
+                if (event.key === 'Enter' || event.key === ',') {
+                    event.preventDefault();
+                    const value = nameInputBox.value;
+                    const names = value.split(',').map(n => n.trim()).filter(n => n.length > 0);
+                    names.forEach(addName);
+                    nameInputBox.value = '';
+                    nameInputBox.focus();
+                }
+            });
+
+            tagContainer.addEventListener('click', (event) => {
+                if (event.target.classList.contains('name-tag-remove')) {
+                    const index = parseInt(event.target.dataset.index);
+                    removeName(index);
+                }
+            });
+
+            pickButton.addEventListener('click', () => {
+                const names = currentStudentList;
+                if (names.length === 0) return; 
+
+                showView('resultView'); 
+                
+                resultStatus.textContent = "抽奖进行中...";
+                resultCard.classList.remove('chosen-card');
+                goBackButton.classList.add('hidden');
+                pickButton.disabled = true;
+                
+                runShuffleWithSlowdown(names);
+
+                setTimeout(() => {
+                    clearInterval(shuffleInterval); 
+                    
+                    const randomIndex = Math.floor(Math.random() * names.length);
+                    const chosenName = names[randomIndex];
+                    
+                    resultStatus.textContent = "🥳 得奖的是... 🥳";
+                    chosenNameSpan.textContent = chosenName;
+                    resultCard.classList.add('chosen-card');
+                    
+                    runConfetti();
+
+                    setTimeout(() => {
+                        goBackButton.classList.remove('hidden');
+                        pickButton.disabled = false;
+                    }, 500); 
+                    
+                }, REVEAL_DELAY_MS); 
+            });
+
+            clearAllButton.addEventListener('click', clearAllParticipants);
+            
+            goBackButton.addEventListener('click', () => {
+                showView('homeView');
+            });
+
+            // Initial setup for this app
+            showView('homeView');
+            updateTagDisplay();
+        }
+
+
+        // --- App 2: Grouping Logic ---
+        function initGroupingApp() {
+            // Scope all selectors to the grouping app's container
+            const appRoot = document.getElementById('app-grouping');
+            if (!appRoot) return;
+
+            // --- Global State ---
+            let students = [];
+            let activeTab = 'group'; // 'group' or 'student'
+            const colorPalette = ['group-color-1', 'group-color-2', 'group-color-3', 'group-color-4', 'group-color-5', 'group-color-6', 'group-color-7', 'group-color-8'];
+
+            // --- Page Elements ---
+            const setupPage = appRoot.querySelector('#setupPage');
+            const resultsPage = appRoot.querySelector('#resultsPage');
+            const animationPage = appRoot.querySelector('#animationPage');
+
+            // --- Setup Page Elements ---
+            const nameDisplay = appRoot.querySelector('#nameDisplay');
+            const nameInputBox = appRoot.querySelector('#nameInputBox');
+            const clearButton = appRoot.querySelector('#clearButton');
+            const startButton = appRoot.querySelector('#startButton');
+            const setupError = appRoot.querySelector('#setupError');
+            
+            // --- Grouping Tab Elements ---
+            const tabBtnGroup = appRoot.querySelector('#tabBtnGroup');
+            const tabBtnStudent = appRoot.querySelector('#tabBtnStudent');
+            const tabContentGroup = appRoot.querySelector('#tabContentGroup');
+            const tabContentStudent = appRoot.querySelector('#tabContentStudent');
+
+            // --- Stepper: Group Count ---
+            const groupDecrement = appRoot.querySelector('#groupDecrement');
+            const groupIncrement = appRoot.querySelector('#groupIncrement');
+            const groupCount = appRoot.querySelector('#groupCount');
+
+            // --- Stepper: Student Count ---
+            const studentDecrement = appRoot.querySelector('#studentDecrement');
+            const studentIncrement = appRoot.querySelector('#studentIncrement');
+            const studentCount = appRoot.querySelector('#studentCount');
+
+            // --- Results Page Elements ---
+            const resultsContainer = appRoot.querySelector('#resultsContainer');
+            const backButton = appRoot.querySelector('#backButton');
+            const downloadButton = appRoot.querySelector('#downloadButton');
+
+            // --- Timer Elements ---
+            const timerContainer = appRoot.querySelector('#timerContainer');
+            const timerHandle = appRoot.querySelector('#timerHandle');
+            const timerIcon = appRoot.querySelector('#timerIcon');
+            const timerInputDisplay = appRoot.querySelector('#timerInputDisplay');
+            const timerMin = appRoot.querySelector('#timerMin');
+            const timerSec = appRoot.querySelector('#timerSec');
+            const timerStartStop = appRoot.querySelector('#timerStartStop');
+            const timerReset = appRoot.querySelector('#timerReset');
+            const timerSet5 = appRoot.querySelector('#timerSet5');
+            const timerSet10 = appRoot.querySelector('#timerSet10');
+            const timerSet15 = appRoot.querySelector('#timerSet15');
+
+            // --- Timer State ---
+            let timerInterval;
+            let isTimerRunning = false;
+            let timeValueStr = "0000"; // Store as 4-digit string
+            let totalSeconds = 0;
+
+
+            // =========== 1. NAME INPUT LOGIC ===========
+
+            function addName(name) {
+                const trimmedName = name.trim();
+                if (trimmedName.length > 0 && !students.includes(trimmedName)) {
+                    students.push(trimmedName);
+                    updateNameDisplay();
+                }
+            }
+
+            function removeName(nameToRemove) {
+                students = students.filter(name => name !== nameToRemove);
+                updateNameDisplay();
+            }
+
+            function updateNameDisplay() {
+                nameDisplay.innerHTML = ''; // Clear display
+                if (students.length === 0) {
+                    nameDisplay.innerHTML = '<span class="text-gray-400 italic p-2">目前名单是空的，请新增...</span>';
+                } else {
+                    students.forEach(name => {
+                        const tag = document.createElement('span');
+                        tag.className = 'bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full flex items-center gap-2';
+                        
+                        const text = document.createElement('span');
+                        text.textContent = name;
+                        
+                        const removeBtn = document.createElement('button');
+                        removeBtn.className = 'text-blue-500 hover:text-blue-700';
+                        removeBtn.innerHTML = '&times;';
+                        removeBtn.onclick = () => removeName(name);
+                        
+                        tag.appendChild(text);
+                        tag.appendChild(removeBtn);
+                        nameDisplay.appendChild(tag);
+                    });
+                }
+            }
+
+            nameInputBox.addEventListener('paste', (event) => {
+                event.preventDefault();
+                const pastedText = (event.clipboardData || window.clipboardData).getData('text');
+                let finalNames = [];
+                const lines = pastedText.split(/\r?\n|\r/);
+                
+                lines.forEach(line => {
+                    line.split(',').forEach(name => {
+                        const trimmedName = name.trim();
+                        if (trimmedName.length > 0) {
+                            finalNames.push(trimmedName);
+                        }
+                    });
+                });
+                finalNames.forEach(addName);
+                nameInputBox.value = '';
+                nameInputBox.focus();
+            });
+
+            nameInputBox.addEventListener('keyup', (event) => {
+                if (event.key === 'Enter' || event.key === ',') {
+                    event.preventDefault();
+                    const value = nameInputBox.value;
+                    const names = value.split(',').map(n => n.trim()).filter(n => n.length > 0);
+                    names.forEach(addName);
+                    nameInputBox.value = '';
+                    nameInputBox.focus();
+                }
+            });
+            
+            clearButton.addEventListener('click', () => {
+                students = [];
+                updateNameDisplay();
+            });
+
+            // =========== 2. GROUPING OPTIONS LOGIC ===========
+
+            groupDecrement.addEventListener('click', () => {
+                let count = parseInt(groupCount.value);
+                if (count > 1) groupCount.value = count - 1;
+            });
+            groupIncrement.addEventListener('click', () => {
+                groupCount.value = parseInt(groupCount.value) + 1;
+            });
+            studentDecrement.addEventListener('click', () => {
+                let count = parseInt(studentCount.value);
+                if (count > 1) studentCount.value = count - 1;
+            });
+            studentIncrement.addEventListener('click', () => {
+                studentCount.value = parseInt(studentCount.value) + 1;
+            });
+
+            function switchTab(tab) {
+                activeTab = tab;
+                if (tab === 'group') {
+                    tabContentGroup.classList.add('active');
+                    tabContentStudent.classList.remove('active');
+                    tabBtnGroup.classList.add('bg-blue-600', 'text-white');
+                    tabBtnGroup.classList.remove('bg-white', 'text-gray-700', 'border');
+                    tabBtnStudent.classList.add('bg-white', 'text-gray-700', 'border');
+                    tabBtnStudent.classList.remove('bg-blue-600', 'text-white');
+                } else {
+                    tabContentGroup.classList.remove('active');
+                    tabContentStudent.classList.add('active');
+                    tabBtnStudent.classList.add('bg-blue-600', 'text-white');
+                    tabBtnStudent.classList.remove('bg-white', 'text-gray-700', 'border');
+                    tabBtnGroup.classList.add('bg-white', 'text-gray-700', 'border');
+                    tabBtnGroup.classList.remove('bg-blue-600', 'text-white');
+                }
+            }
+            tabBtnGroup.addEventListener('click', () => switchTab('group'));
+            tabBtnStudent.addEventListener('click', () => switchTab('student'));
+
+
+            // =========== 3. START & ANIMATION LOGIC ===========
+
+            startButton.addEventListener('click', () => {
+                setupError.textContent = '';
+                if (students.length === 0) {
+                    setupError.textContent = '请汇入名单。';
+                    return;
+                }
+
+                let numGroups;
+                if (activeTab === 'group') {
+                    numGroups = parseInt(groupCount.value);
+                } else {
+                    const numStudentsPerGroup = parseInt(studentCount.value);
+                    if (numStudentsPerGroup <= 0) {
+                         setupError.textContent = '各组别学生人数必须大于1。';
+                         return;
+                    }
+                    numGroups = Math.ceil(students.length / numStudentsPerGroup);
+                }
+
+                if (numGroups <= 0) {
+                    setupError.textContent = '组别数量必须大于1。';
+                    return;
+                }
+                if (numGroups > students.length) {
+                    setupError.textContent = '组别数量比学生多!';
+                    return;
+                }
+                runAssignmentAnimation(numGroups);
+            });
+
+            function runAssignmentAnimation(numGroups) {
+                let groups = [];
+                for (let i = 0; i < numGroups; i++) {
+                    groups.push({ id: i + 1, names: [] });
+                }
+                let shuffledStudents = [...students].sort(() => Math.random() - 0.5);
+                let groupIndex = 0;
+                shuffledStudents.forEach(studentName => {
+                    const targetGroup = groups[groupIndex];
+                    targetGroup.names.push(studentName);
+                    groupIndex = (groupIndex + 1) % numGroups; 
+                });
+                setupPage.classList.remove('active'); 
+                endAnimation(groups); 
+            }
+
+            function endAnimation(groups) {
+                animationPage.style.display = 'none';
+                resultsPage.classList.add('active');
+                buildResultsCards(groups);
+                revealNamesOneByOne();
+            }
+
+            // =========== 4. RESULTS PAGE LOGIC ===========
+
+            function revealNamesOneByOne() {
+                // We must query from the specific appRoot
+                const namesToReveal = appRoot.querySelectorAll('.name-reveal');
+                let delay = 0;
+                const interval = 350; 
+
+                namesToReveal.forEach((nameEl) => {
+                    setTimeout(() => {
+                        nameEl.classList.add('visible');
+                    }, delay);
+                    delay += interval;
+                });
+            }
+
+            function buildResultsCards(groups) {
+                resultsContainer.innerHTML = ''; 
+                groups.forEach((group, index) => {
+                    const colorClass = colorPalette[index % colorPalette.length];
+                    const card = document.createElement('div');
+                    card.className = 'group-card-colors ' + colorClass + ' w-full sm:w-64 bg-white rounded-lg shadow-md overflow-hidden flex-shrink-0';
+                    const header = document.createElement('div');
+                    header.className = 'p-3 flex justify-between items-center';
+                    header.style.backgroundColor = 'var(--color-header-bg)';
+                    header.style.color = 'var(--color-header-text)';
+                    
+                    header.innerHTML =
+                        '<h3 class="text-lg font-bold">Group ' + group.id + '</h3>' +
+                        '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">' +
+                          '<path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a2 2 0 00-2-2H6a2 2 0 00-2 2v3h12z" />' +
+                        '</svg>';
+                    
+                    const body = document.createElement('ul');
+                    body.className = 'divide-y divide-gray-200';
+                    body.style.backgroundColor = 'var(--color-bg)';
+                    body.style.color = 'var(--color-text)';
+
+                    if (group.names.length === 0) {
+                        body.innerHTML = '<li class="px-4 py-3 text-sm italic">Empty</li>';
+                    } else {
+                        group.names.forEach((name, i) => {
+                            const li = document.createElement('li');
+                            li.className = 'name-reveal px-4 py-3 text-sm font-medium';
+                            if (i % 2 === 1) {
+                               li.style.backgroundColor = 'rgba(255,255,255,0.2)';
+                            }
+                            li.textContent = name;
+                            body.appendChild(li);
+                        });
+                    }
+                    
+                    card.appendChild(header);
+                    card.appendChild(body);
+                    resultsContainer.appendChild(card);
+                });
+            }
+            
+            backButton.addEventListener('click', () => {
+                resultsPage.classList.remove('active');
+                setupPage.classList.add('active');
+            });
+            
+            downloadButton.addEventListener('click', () => {
+                const resultsHTML = resultsContainer.innerHTML;
+                const styles =
+                    '<s' + 'cript src="https://cdn.tailwindcss.com"></s' + 'cript>' +
+                    '<style>' +
+                        'body { font-family: \'Inter\', sans-serif; background-color: #f3f4f6; }' +
+                        '.group-card-colors {' +
+                            '--color-bg: #e0e7ff; --color-text: #3730a3; --color-header-bg: #4f46e5; --color-header-text: #ffffff;' +
+                        '}' +
+                        '.group-color-1 { --color-bg: #dbeafe; --color-text: #1e40af; --color-header-bg: #2563eb; }' +
+                        '.group-color-2 { --color-bg: #d1fae5; --color-text: #065f46; --color-header-bg: #10b981; }' +
+                        '.group-color-3 { --color-bg: #fef3c7; --color-text: #92400e; --color-header-bg: #f59e0b; }' +
+                        '.group-color-4 { --color-bg: #fee2e2; --color-text: #991b1b; --color-header-bg: #ef4444; }' +
+                        '.group-color-5 { --color-bg: #f3e8ff; --color-text: #581c87; --color-header-bg: #9333ea; }' +
+                        '.group-color-6 { --color-bg: #ffe4e6; --color-text: #9f1239; --color-header-bg: #e11d48; }' +
+                        '.group-color-7 { --color-bg: #e0f2fe; --color-text: #075985; --color-header-bg: #0ea5e9; }' +
+                        '.group-color-8 { --color-bg: #dcfce7; --color-text: #166534; --color-header-bg: #22c55e; }' +
+                    '</style>';
+                
+                const htmlContent =
+                    '<!DOCTYPE html><html lang="en">' +
+                    '<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+                    '<title>Student Groups</title>' + styles + '</head>' +
+                    '<body><div class="container mx-auto p-8">' +
+                    '<h1 class="text-4xl font-bold text-center mb-8">Generated Groups</h1>' +
+                    '<div class="flex flex-wrap justify-center gap-6">' + resultsHTML + '</div>' +
+                    '</div></body></html>';
+                
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'student-groups.html';
+                a.click();
+                URL.revokeObjectURL(a.href);
+            });
+
+            // =========== 5. TIMER LOGIC ===========
+            
+            function pad(num) {
+                return num < 10 ? '0' + num : '' + num;
+            }
+            
+            timerHandle.addEventListener('click', () => {
+                timerContainer.classList.toggle('retracted');
+                updateTimerHandleIcon();
+            });
+
+            timerInputDisplay.addEventListener('keydown', (e) => {
+                if (isTimerRunning) { e.preventDefault(); return; }
+                
+                if (e.key >= '0' && e.key <= '9') {
+                    e.preventDefault();
+                    timeValueStr = (timeValueStr + e.key).slice(-4);
+                } else if (e.key === 'Backspace') {
+                    e.preventDefault();
+                    timeValueStr = ('0' + timeValueStr.slice(0, -1)).slice(-4);
+                }
+                updateMicrowaveDisplay();
+            });
+
+            function updateMicrowaveDisplay() {
+                timerMin.textContent = timeValueStr.slice(0, 2);
+                timerSec.textContent = timeValueStr.slice(2, 4);
+            }
+
+            function setTimeFromSeconds(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                timeValueStr = pad(mins) + pad(secs);
+                updateMicrowaveDisplay();
+            }
+
+            [timerSet5, timerSet10, timerSet15].forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (isTimerRunning) return;
+                    const seconds = parseInt(btn.dataset.minutes) * 60;
+                    setTimeFromSeconds(seconds);
+                });
+            });
+
+            timerStartStop.addEventListener('click', () => {
+                isTimerRunning = !isTimerRunning;
+                if (isTimerRunning) {
+                    const minutes = parseInt(timeValueStr.slice(0, 2));
+                    const seconds = parseInt(timeValueStr.slice(2, 4));
+                    totalSeconds = (minutes * 60) + seconds;
+
+                    if (totalSeconds === 0) {
+                        totalSeconds = 5 * 60; 
+                        setTimeFromSeconds(totalSeconds);
+                    }
+                    
+                    timerStartStop.textContent = 'Stop';
+                    timerStartStop.classList.remove('bg-green-500');
+                    timerStartStop.classList.add('bg-red-500');
+                    timerInputDisplay.style.pointerEvents = 'none';
+                    timerInputDisplay.style.opacity = '0.7';
+                    
+                    timerInterval = setInterval(() => {
+                        if (totalSeconds <= 0) {
+                            clearInterval(timerInterval);
+                            isTimerRunning = false;
+                            timerStartStop.textContent = 'Start';
+                            timerStartStop.classList.remove('bg-red-500');
+                            timerStartStop.classList.add('bg-green-500');
+                            timerInputDisplay.style.pointerEvents = 'auto';
+                            timerInputDisplay.style.opacity = '1';
+                            setTimeFromSeconds(0);
+                        } else {
+                            totalSeconds--;
+                            setTimeFromSeconds(totalSeconds);
+                        }
+                        updateTimerHandleIcon();
+                    }, 1000);
+                } else {
+                    clearInterval(timerInterval);
+                    timerStartStop.textContent = 'Start';
+                    timerStartStop.classList.remove('bg-red-500');
+                    timerStartStop.classList.add('bg-green-500');
+                    timerInputDisplay.style.pointerEvents = 'auto';
+                    timerInputDisplay.style.opacity = '1';
+                }
+                updateTimerHandleIcon();
+            });
+
+            function resetTimer() {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                totalSeconds = 0;
+                timeValueStr = "0000";
+                
+                timerStartStop.textContent = 'Start';
+                timerStartStop.classList.remove('bg-red-500');
+                timerStartStop.classList.add('bg-green-500');
+                timerInputDisplay.style.pointerEvents = 'auto';
+                timerInputDisplay.style.opacity = '1';
+                
+                updateMicrowaveDisplay();
+                updateTimerHandleIcon();
+            }
+            timerReset.addEventListener('click', resetTimer);
+
+            function updateTimerHandleIcon() {
+                if (isTimerRunning && timerContainer.classList.contains('retracted')) {
+                    const minutes = Math.floor(totalSeconds / 60);
+                    const seconds = totalSeconds % 60;
+                    timerIcon.innerHTML = '<span class="font-mono text-lg">' + pad(minutes) + ':' + pad(seconds) + '</span>';
+                } else {
+                    timerIcon.innerHTML =
+                        '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">' +
+                          '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />' +
+                        '</svg>';
+                }
+            }
+            
+            // --- Initial State for this app ---
+            updateNameDisplay();
+            switchTab('group');
+            updateMicrowaveDisplay();
+            updateTimerHandleIcon();
+        }
+
+        // --- Main Page Logic (Navigation) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLuckyDraw = document.getElementById('nav-lucky-draw');
+            const navGrouping = document.getElementById('nav-grouping');
+            
+            const appLuckyDraw = document.getElementById('app-lucky-draw');
+            const appGrouping = document.getElementById('app-grouping');
+            
+            const sidebarButtons = [navLuckyDraw, navGrouping];
+            const appContents = [appLuckyDraw, appGrouping];
+
+            function showApp(appId) {
+                // Hide all apps and deactivate all buttons
+                appContents.forEach(app => {
+                    app.classList.remove('active');
+                    app.classList.add('hidden');
+                });
+                sidebarButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Show the selected app and activate its button
+                if (appId === 'app-lucky-draw') {
+                    appLuckyDraw.classList.add('active');
+                    appLuckyDraw.classList.remove('hidden');
+                    navLuckyDraw.classList.add('active');
+                } else if (appId === 'app-grouping') {
+                    appGrouping.classList.add('active');
+                    appGrouping.classList.remove('hidden');
+                    navGrouping.classList.add('active');
+                }
+            }
+
+            navLuckyDraw.addEventListener('click', () => showApp('app-lucky-draw'));
+            navGrouping.addEventListener('click', () => showApp('app-grouping'));
+
+            // Initialize both apps
+            initLuckyDrawApp();
+            initGroupingApp();
+            
+            // Set default view on load
+            showApp('app-lucky-draw');
+        });
+
+    </script>
+</body>
 </html>
