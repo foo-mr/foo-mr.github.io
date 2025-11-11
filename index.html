@@ -53,6 +53,15 @@
             display: block; /* Shown when active */
         }
 
+        /* --- Retractable Sidebar Styles --- */
+        #sidebar {
+            transition: margin-left 0.3s ease-in-out;
+        }
+        
+        body.sidebar-retracted #sidebar {
+            margin-left: -14rem; /* Tailwind's w-56 */
+        }
+
         /* --- Styles from index (2).html (Lucky Draw) --- */
         .card {
             background-color: #93c5fd; /* Default Blue-300 */
@@ -229,6 +238,20 @@
         </ul>
     </div>
 
+    <!-- === Sidebar Toggle === -->
+    <div class="relative z-50">
+        <button id="sidebar-toggle" class="absolute top-6 -ml-4 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition focus:outline-none">
+            <!-- Icon: Hide (Chevron Left) -->
+            <svg id="toggle-icon-hide" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            <!-- Icon: Show (Chevron Right) -->
+            <svg id="toggle-icon-show" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+    </div>
+
     <!-- === Content Area === -->
     <div id="content-area" class="flex-1 p-4 md:p-8">
         
@@ -316,7 +339,7 @@
                         <div class="rounded-lg bg-gray-50 border border-gray-200 p-6 mb-6">
                             <h2 class="text-xl font-semibold mb-4 text-gray-800">分组选项</h2>
         
-                            <div class="inline-flex mb-4">
+                            <div class="flex justify-center mb-4">
                                 <button id="tabBtnGroup" class="px-4 py-2 font-medium rounded-l-lg bg-blue-600 text-white">
                                     <span class="block text-sm">By Number of Groups</span>
                                     <span class="block text-xs">多少组?</span>
@@ -1107,7 +1130,7 @@
             updateTimerHandleIcon();
         }
 
-        // --- Main Page Logic (Navigation) ---
+        // --- Main Page Logic (Navigation & Sidebar) ---
         document.addEventListener('DOMContentLoaded', () => {
             const navLuckyDraw = document.getElementById('nav-lucky-draw');
             const navGrouping = document.getElementById('nav-grouping');
@@ -1142,6 +1165,27 @@
 
             navLuckyDraw.addEventListener('click', () => showApp('app-lucky-draw'));
             navGrouping.addEventListener('click', () => showApp('app-grouping'));
+
+            // --- Sidebar Toggle Logic ---
+            const toggleButton = document.getElementById('sidebar-toggle');
+            const iconHide = document.getElementById('toggle-icon-hide');
+            const iconShow = document.getElementById('toggle-icon-show');
+            const body = document.body;
+
+            if (toggleButton && iconHide && iconShow) {
+                toggleButton.addEventListener('click', () => {
+                    body.classList.toggle('sidebar-retracted');
+
+                    // Toggle icon visibility
+                    if (body.classList.contains('sidebar-retracted')) {
+                        iconHide.classList.add('hidden');
+                        iconShow.classList.remove('hidden');
+                    } else {
+                        iconHide.classList.remove('hidden');
+                        iconShow.classList.add('hidden');
+                    }
+                });
+            }
 
             // Initialize both apps
             initLuckyDrawApp();
