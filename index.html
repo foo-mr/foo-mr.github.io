@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>教师工具箱</title>
+    <title>符老师工具箱 (Pro Edition)</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -65,8 +65,16 @@
             border-radius: 0.75rem; color: white; font-size: 1rem; transition: all 0.2s;
             font-family: var(--font-stack);
         }
+        .form-input:disabled { opacity: 0.5; cursor: not-allowed; background-color: #1e293b; }
         .form-input:focus { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
         
+        /* 修复时间选择器图标在深色背景下不可见的问题 */
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+            opacity: 0.8;
+        }
+
         /* --- Tags Management --- */
         .tag-container { 
             min-height: 120px; max-height: 280px; overflow-y: auto; 
@@ -100,6 +108,7 @@
         /* --- Clock & Timer --- */
         .big-timer { font-size: 7.5rem; font-weight: 800; font-family: var(--font-mono); color: white; letter-spacing: -2px; line-height: 1; }
         .big-timer.critical { color: var(--color-danger); animation: pulse 1s infinite; }
+        .big-timer.waiting { color: var(--color-warning); font-size: 5rem; } 
         @keyframes pulse { 50% { opacity: 0.5; } }
 
         .clock-face { fill: #1e293b; stroke: #334155; stroke-width: 6; }
@@ -120,6 +129,20 @@
         /* Winner Card Animation */
         .chosen-card { animation: winnerGlow 1.5s infinite alternate; }
         @keyframes winnerGlow { from { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); } to { box-shadow: 0 0 40px rgba(59, 130, 246, 0.8), 0 0 60px rgba(59, 130, 246, 0.4); } }
+
+        /* --- Grouping Results Styles --- */
+        .name-reveal { opacity: 0; transform: translateY(10px); transition: all 0.5s ease; }
+        .name-reveal.visible { opacity: 1; transform: translateY(0); }
+        
+        .group-card-colors { --color-bg: #e0e7ff; --color-text: #3730a3; --color-header-bg: #4f46e5; --color-header-text: #ffffff; }
+        .group-color-1 { --color-bg: #dbeafe; --color-text: #1e40af; --color-header-bg: #2563eb; }
+        .group-color-2 { --color-bg: #d1fae5; --color-text: #065f46; --color-header-bg: #10b981; }
+        .group-color-3 { --color-bg: #fef3c7; --color-text: #92400e; --color-header-bg: #f59e0b; }
+        .group-color-4 { --color-bg: #fee2e2; --color-text: #991b1b; --color-header-bg: #ef4444; }
+        .group-color-5 { --color-bg: #f3e8ff; --color-text: #581c87; --color-header-bg: #9333ea; }
+        .group-color-6 { --color-bg: #ffe4e6; --color-text: #9f1239; --color-header-bg: #e11d48; }
+        .group-color-7 { --color-bg: #e0f2fe; --color-text: #075985; --color-header-bg: #0ea5e9; }
+        .group-color-8 { --color-bg: #dcfce7; --color-text: #166534; --color-header-bg: #22c55e; }
     </style>
 </head>
 <body>
@@ -128,8 +151,8 @@
 
     <div id="sidebar">
         <div>
-            <h1 class="brand-title">教师工具箱</h1>
-            <p class="brand-subtitle">Developed by 符老师</p>
+            <h1 class="brand-title">符老师工具箱</h1>
+            <p class="brand-subtitle">Created by 符老师</p>
         </div>
         <nav>
             <button id="nav-lucky-draw" class="nav-btn active"><span>✨</span> 幸运抽奖</button>
@@ -196,10 +219,11 @@
             </div>
             
             <div id="gp-results-page" class="hidden">
-                <div id="gp-results-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-                <div class="text-center mt-8">
-                    <button id="gp-back-btn" class="btn border border-slate-600 px-10 bg-slate-800 text-white font-bold">重新设置分组</button>
+                <div class="flex justify-between items-center mb-6">
+                    <button id="gp-back-btn" class="btn border border-slate-600 bg-slate-800 text-white text-sm">← 返回设置</button>
+                    <button id="gp-download-btn" class="btn bg-green-600 hover:bg-green-500 text-white text-sm">📥 下载分组结果</button>
                 </div>
+                <div id="gp-results-container" class="flex flex-wrap justify-center gap-6 pb-10"></div>
             </div>
         </div>
 
@@ -222,7 +246,16 @@
                             <input type="number" id="exam-duration-input" class="form-input" value="60">
                         </div>
                     </div>
-                    <button id="exam-set-btn" class="btn btn-primary w-full text-xl py-4 shadow-xl">确认并开始</button>
+                    
+                    <!-- Dual Buttons Layout -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                        <button id="exam-set-btn" class="btn bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-4 border border-slate-600 shadow-sm">
+                            按设定时间开始
+                        </button>
+                        <button id="exam-start-now-btn" class="btn btn-primary text-xl font-bold py-4 shadow-xl">
+                            🚀 马上开始
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -230,21 +263,22 @@
                 <div class="app-card flex justify-between items-center bg-slate-800/80 border-blue-500/30 py-4">
                     <h2 id="exam-display-title" class="text-2xl font-black text-blue-400 px-2">--</h2>
                     <div class="text-right px-2">
-                        <div class="text-xs text-muted font-bold uppercase tracking-widest">预计结束时间</div>
+                        <div id="exam-status-label" class="text-xs text-muted font-bold uppercase tracking-widest">预计结束时间</div>
                         <div id="exam-end-time-display" class="text-2xl font-mono text-white font-bold">00:00:00</div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="app-card flex flex-col items-center justify-center bg-slate-900/40">
-                        <svg id="exam-analog-clock" width="280" height="280" viewBox="0 0 220 220"></svg>
+                        <!-- SVG Clock Container -->
+                        <div id="clock-container"></div> 
                         <div class="mt-6 flex flex-col items-center">
                             <span class="text-xs text-muted font-bold tracking-widest uppercase mb-1">系统当前时间</span>
                             <div id="exam-sys-time" class="text-3xl font-mono text-blue-400 bg-slate-950 px-6 py-2 rounded-xl border border-slate-700 shadow-inner">00:00:00</div>
                         </div>
                     </div>
                     <div class="app-card flex flex-col items-center justify-center text-center bg-slate-800/40">
-                        <p class="text-muted uppercase tracking-widest text-sm font-bold mb-4">考试剩余时间</p>
+                        <p id="exam-timer-label" class="text-muted uppercase tracking-widest text-sm font-bold mb-4">考试剩余时间</p>
                         <div id="exam-big-timer" class="big-timer">00:00</div>
                         <div class="flex gap-4 mt-12 w-full max-w-xs">
                             <button id="exam-pause-btn" class="btn bg-slate-700 hover:bg-slate-600 flex-1 text-lg">暂停</button>
@@ -255,10 +289,10 @@
             </div>
         </div>
 
-        <!-- Footer Attribution -->
+        <!-- Footer Attribution with Auto-Year -->
         <footer class="mt-auto pt-10 pb-4 text-center">
             <p class="text-slate-600 text-xs font-medium tracking-widest uppercase">
-                &copy; 教师工具箱 | Developed by 符老师
+                &copy; <span id="footer-year"></span> 符老师工具箱 | Created by 符老师
             </p>
         </footer>
     </div>
@@ -266,6 +300,9 @@
     <script>
         const $ = (s, r = document) => r.querySelector(s);
         const $$ = (s, r = document) => r.querySelectorAll(s);
+
+        // Set dynamic year in footer
+        $('#footer-year').textContent = new Date().getFullYear();
 
         // --- Core Helpers ---
         function runConfetti() {
@@ -275,7 +312,7 @@
             confetti({ particleCount: 50, angle: 120, spread: 55, origin: { x: 1 } });
         }
 
-        // --- Name System Manager ---
+        // --- Name System Manager (With Duplicate Check) ---
         function createNameManager(inputId, containerId, pickBtnId = null) {
             const list = [];
             const input = $(inputId);
@@ -295,8 +332,17 @@
             };
 
             const process = (text) => {
-                const names = text.split(/[,\s\n\t，、；;]+/).filter(n => n.trim() !== "");
-                list.push(...names);
+                const rawNames = text.split(/[,\s\n\t，、；;]+/).filter(n => n.trim() !== "");
+                let addedCount = 0;
+                
+                rawNames.forEach(n => {
+                    // Prevent duplicates
+                    if (!list.includes(n)) {
+                        list.push(n);
+                        addedCount++;
+                    }
+                });
+                
                 render();
             };
 
@@ -353,6 +399,7 @@
         // --- Grouping Logic ---
         const gpMgr = createNameManager('#gp-name-input', '#gp-name-display', '#gp-start-btn');
         let gpMode = 'count';
+        const colorPalette = ['group-color-1', 'group-color-2', 'group-color-3', 'group-color-4', 'group-color-5', 'group-color-6', 'group-color-7', 'group-color-8'];
 
         $$('.mode-btn').forEach(btn => {
             btn.onclick = () => {
@@ -365,111 +412,309 @@
 
         $('#gp-clear-btn').onclick = () => { gpMgr.clear(); };
 
+        function revealNamesOneByOne() {
+            const namesToReveal = document.querySelectorAll('.name-reveal');
+            let delay = 0;
+            const interval = 200; 
+            namesToReveal.forEach((nameEl) => {
+                setTimeout(() => { nameEl.classList.add('visible'); }, delay);
+                delay += interval;
+            });
+        }
+
+        function buildResultsCards(groups) {
+            const resultsContainer = $('#gp-results-container');
+            resultsContainer.innerHTML = '';
+            
+            groups.forEach((groupNames, index) => {
+                const colorClass = colorPalette[index % colorPalette.length];
+                const card = document.createElement('div');
+                card.className = `group-card-colors ${colorClass} w-full sm:w-64 bg-white rounded-lg shadow-md overflow-hidden flex-shrink-0 mb-4 transform transition-all hover:scale-105`;
+                
+                const headerStyle = `background-color: var(--color-header-bg); color: var(--color-header-text);`;
+                const bodyStyle = `background-color: var(--color-bg); color: var(--color-text);`;
+
+                const header = document.createElement('div');
+                header.className = 'p-3 flex justify-between items-center';
+                header.setAttribute('style', headerStyle);
+                header.innerHTML = `
+                    <h3 class="text-lg font-bold">Group ${index + 1}</h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-80" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a2 2 0 00-2-2H6a2 2 0 00-2 2v3h12z" />
+                    </svg>`;
+                
+                const body = document.createElement('ul');
+                body.className = 'divide-y divide-gray-200/20'; 
+                body.setAttribute('style', bodyStyle);
+
+                if (groupNames.length === 0) {
+                    body.innerHTML = '<li class="px-4 py-3 text-sm italic opacity-70">Empty</li>';
+                } else {
+                    groupNames.forEach((name, i) => {
+                        const li = document.createElement('li');
+                        li.className = 'name-reveal px-4 py-3 text-sm font-medium flex items-center';
+                        if (i % 2 === 1) li.style.backgroundColor = 'rgba(255,255,255,0.2)';
+                        li.textContent = name;
+                        body.appendChild(li);
+                    });
+                }
+                
+                card.appendChild(header);
+                card.appendChild(body);
+                resultsContainer.appendChild(card);
+            });
+            revealNamesOneByOne();
+        }
+
         $('#gp-start-btn').onclick = () => {
             const val = parseInt($('#gp-value').value);
+            // Minimum check: list needs at least 1 person. 
+            // Originally < 2, but for testing "1 person group" logic, < 1 is safer, though grouping usually implies > 1. 
+            // Keeping < 2 to be safe for "grouping" context, but if you have 4 people it passes.
             if (!val || val < 1 || gpMgr.list.length < 2) return;
-            let gc = gpMode === 'count' ? Math.min(val, gpMgr.list.length) : Math.max(1, Math.ceil(gpMgr.list.length / val));
+
             const shuffled = [...gpMgr.list].sort(() => Math.random() - 0.5);
-            const groups = Array.from({ length: gc }, () => []);
-            shuffled.forEach((name, i) => groups[i % gc].push(name));
-            const container = $('#gp-results-container');
-            container.innerHTML = '';
-            groups.forEach((g, i) => {
-                const card = document.createElement('div');
-                card.className = 'app-card flex flex-col';
-                card.innerHTML = `<h3 class="font-bold text-orange-400 mb-4 border-b border-slate-700 pb-2 flex justify-between">
-                                    <span>第 ${i+1} 组</span><span class="text-xs text-slate-500 self-center">${g.length} 人</span></h3>
-                                  <div class="flex flex-wrap gap-2">${g.map(n => `<span class="tag">${n}</span>`).join('')}</div>`;
-                container.appendChild(card);
-            });
+            let groups = [];
+
+            if (gpMode === 'count') {
+                // Mode 1: Split into N groups (Try to be even)
+                // "按组数分" - Round Robin distribution
+                const groupCount = Math.min(val, shuffled.length);
+                groups = Array.from({ length: groupCount }, () => []);
+                shuffled.forEach((name, i) => groups[i % groupCount].push(name));
+            } else {
+                // Mode 2: Split by Size (Fill first group, then second...)
+                // "按每组人数分" - Chunking
+                for (let i = 0; i < shuffled.length; i += val) {
+                    groups.push(shuffled.slice(i, i + val));
+                }
+            }
+            
+            buildResultsCards(groups);
+            
             $('#gp-setup-page').classList.add('hidden');
             $('#gp-results-page').classList.remove('hidden');
         };
+
         $('#gp-back-btn').onclick = () => { $('#gp-setup-page').classList.remove('hidden'); $('#gp-results-page').classList.add('hidden'); };
+        
+        $('#gp-download-btn').onclick = () => {
+            const resultsHTML = $('#gp-results-container').innerHTML;
+            const styles = `
+                <script src="https://cdn.tailwindcss.com"><\/script>
+                <style>
+                    body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; padding: 20px; }
+                    .group-card-colors { --color-bg: #e0e7ff; --color-text: #3730a3; --color-header-bg: #4f46e5; --color-header-text: #ffffff; }
+                    .group-color-1 { --color-bg: #dbeafe; --color-text: #1e40af; --color-header-bg: #2563eb; }
+                    .group-color-2 { --color-bg: #d1fae5; --color-text: #065f46; --color-header-bg: #10b981; }
+                    .group-color-3 { --color-bg: #fef3c7; --color-text: #92400e; --color-header-bg: #f59e0b; }
+                    .group-color-4 { --color-bg: #fee2e2; --color-text: #991b1b; --color-header-bg: #ef4444; }
+                    .group-color-5 { --color-bg: #f3e8ff; --color-text: #581c87; --color-header-bg: #9333ea; }
+                    .group-color-6 { --color-bg: #ffe4e6; --color-text: #9f1239; --color-header-bg: #e11d48; }
+                    .group-color-7 { --color-bg: #e0f2fe; --color-text: #075985; --color-header-bg: #0ea5e9; }
+                    .group-color-8 { --color-bg: #dcfce7; --color-text: #166534; --color-header-bg: #22c55e; }
+                    .name-reveal { opacity: 1 !important; transform: none !important; }
+                </style>`;
+            
+            const htmlContent = `
+                <!DOCTYPE html><html lang="en">
+                <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>分组结果 - 符老师工具箱</title>${styles}</head>
+                <body>
+                    <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">分组结果 (Generated Groups)</h1>
+                    <div class="flex flex-wrap justify-center gap-6">${resultsHTML}</div>
+                </body></html>`;
+            
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `student-groups-${new Date().toISOString().slice(0,10)}.html`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        };
 
-        // --- Exam Timer Logic ---
+        // --- Exam Timer Logic (Fully Synced) ---
+        let examStart = null;
         let examEnd = null;
-        let examInterval = null;
         let isPaused = false;
-        let pauseLeft = 0;
+        let pauseLeft = 0; 
+        let pauseLeftWait = 0; 
+        let examState = 'idle'; // 'waiting', 'running', 'paused', 'finished'
 
-        function updateClock(now) {
-            const svg = $('#exam-analog-clock');
-            if (!svg.innerHTML) {
-                let t = `<circle cx="110" cy="110" r="100" class="clock-face"/>`;
-                for (let i = 0; i < 60; i++) {
-                    const a = i * 6 * Math.PI / 180;
-                    const maj = i % 5 === 0;
-                    t += `<line x1="${110+98*Math.sin(a)}" y1="${110-98*Math.cos(a)}" x2="${110+(maj?85:92)*Math.sin(a)}" y2="${110-(maj?85:92)*Math.cos(a)}" class="${maj?'tick-major':'tick-minor'}"/>`;
-                    if (maj) t += `<text x="${110+75*Math.sin(a)}" y="${110-75*Math.cos(a)+5}" class="clock-num" text-anchor="middle">${i===0?12:i/5}</text>`;
+        // Initialize SVG Clock
+        function initClock() {
+            const container = $('#clock-container');
+            if(container.innerHTML) return;
+            
+            let t = `<svg id="exam-analog-clock" width="280" height="280" viewBox="0 0 220 220">
+                <circle cx="110" cy="110" r="100" class="clock-face"/>`;
+            for (let i = 0; i < 60; i++) {
+                const a = i * 6 * Math.PI / 180;
+                const maj = i % 5 === 0;
+                t += `<line x1="${110+98*Math.sin(a)}" y1="${110-98*Math.cos(a)}" x2="${110+(maj?85:92)*Math.sin(a)}" y2="${110-(maj?85:92)*Math.cos(a)}" class="${maj?'tick-major':'tick-minor'}"/>`;
+                if (maj) t += `<text x="${110+75*Math.sin(a)}" y="${110-75*Math.cos(a)+5}" class="clock-num" text-anchor="middle">${i===0?12:i/5}</text>`;
+            }
+            t += `<line id="h-hour" x1="110" y1="110" x2="110" y2="65" class="h-hour"/><line id="h-min" x1="110" y1="110" x2="110" y2="50" class="h-min"/><line id="h-sec" x1="110" y1="110" x2="110" y2="40" class="h-sec"/><circle cx="110" cy="110" r="4" class="h-cap"/></svg>`;
+            container.innerHTML = t;
+        }
+
+        function formatTime(sec) {
+            const h = Math.floor(sec / 3600);
+            const m = Math.floor((sec % 3600) / 60);
+            const s = sec % 60;
+            return `${h>0?h+':':''}${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }
+
+        // --- Unified High-Frequency Loop ---
+        function startUnifiedLoop() {
+            initClock();
+            const hSec = $('#h-sec');
+            const hMin = $('#h-min');
+            const hHour = $('#h-hour');
+            const sysTime = $('#exam-sys-time');
+            const bigTimer = $('#exam-big-timer');
+
+            function step() {
+                const now = new Date();
+                
+                // 1. Update Analog Clock (Tick style)
+                const s = now.getSeconds();
+                const m = now.getMinutes();
+                const h = now.getHours();
+
+                // Discrete ticking seconds
+                const sAngle = s * 6;
+                const mAngle = m * 6 + s * 0.1;
+                const hAngle = (h % 12) * 30 + m * 0.5;
+
+                if(hSec) hSec.setAttribute('transform', `rotate(${sAngle}, 110, 110)`);
+                if(hMin) hMin.setAttribute('transform', `rotate(${mAngle}, 110, 110)`);
+                if(hHour) hHour.setAttribute('transform', `rotate(${hAngle}, 110, 110)`);
+                
+                // 2. Update System Digital Time
+                if(sysTime) sysTime.textContent = now.toTimeString().split(' ')[0];
+
+                // 3. Update Exam Countdown (Synced)
+                if (!isPaused && examEnd) {
+                    if (examState === 'waiting') {
+                        // Changed Math.floor to Math.ceil for waiting countdown
+                        const diff = Math.ceil((examStart - now) / 1000);
+                        if (diff <= 0) {
+                            // Start Time Reached
+                            examState = 'running';
+                            $('#exam-timer-label').textContent = "考试剩余时间";
+                            $('#exam-status-label').textContent = "预计结束时间";
+                            $('#exam-big-timer').classList.remove('waiting');
+                            $('#exam-end-time-display').textContent = examEnd.toTimeString().split(' ')[0];
+                        } else {
+                            if(bigTimer) bigTimer.textContent = formatTime(diff);
+                        }
+                    } else if (examState === 'running') {
+                        // Changed Math.floor to Math.ceil for exam countdown
+                        const diff = Math.max(0, Math.ceil((examEnd - now) / 1000));
+                        if(bigTimer) bigTimer.textContent = formatTime(diff);
+                        
+                        if (diff < 60) $('#exam-big-timer').classList.add('critical');
+                        else $('#exam-big-timer').classList.remove('critical');
+                        
+                        if (diff === 0) { 
+                            examState = 'finished';
+                            alert("考试时间到！");
+                        }
+                    }
                 }
-                t += `<line id="h-hour" x1="110" y1="110" x2="110" y2="65" class="h-hour"/><line id="h-min" x1="110" y1="110" x2="110" y2="50" class="h-min"/><line id="h-sec" x1="110" y1="110" x2="110" y2="40" class="h-sec"/><circle cx="110" cy="110" r="4" class="h-cap"/>`;
-                svg.innerHTML = t;
+
+                requestAnimationFrame(step);
             }
-            const s = now.getSeconds(), m = now.getMinutes(), h = now.getHours() % 12;
-            $('#h-sec').setAttribute('transform', `rotate(${s*6}, 110, 110)`);
-            $('#h-min').setAttribute('transform', `rotate(${m*6+s*0.1}, 110, 110)`);
-            $('#h-hour').setAttribute('transform', `rotate(${h*30+m*0.5}, 110, 110)`);
+            requestAnimationFrame(step);
         }
 
-        function refreshTimer() {
-            const now = new Date();
-            updateClock(now);
-            $('#exam-sys-time').textContent = now.toTimeString().split(' ')[0];
-            if (examEnd && !isPaused) {
-                const diff = Math.max(0, Math.floor((examEnd - now) / 1000));
-                const h = Math.floor(diff / 3600), m = Math.floor((diff % 3600) / 60), s = diff % 60;
-                $('#exam-big-timer').textContent = `${h>0?h+':':''}${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-                if (diff < 60) $('#exam-big-timer').classList.add('critical');
-                else $('#exam-big-timer').classList.remove('critical');
-                if (diff === 0) { clearInterval(examInterval); }
-            }
-        }
-
-        $('#exam-set-btn').onclick = () => {
+        function startExam(isImmediate) {
             const dur = parseInt($('#exam-duration-input').value);
             const title = $('#exam-title-input').value || "考试倒计时";
-            let start = new Date();
-            if ($('#exam-start-input').value) {
+            
+            let startTime = new Date();
+            let isFutureStart = false;
+
+            if (!isImmediate && $('#exam-start-input').value) {
                 const [h, m] = $('#exam-start-input').value.split(':');
-                start.setHours(h, m, 0);
-                if (start < new Date()) start = new Date();
+                const tempStart = new Date();
+                tempStart.setHours(h, m, 0, 0);
+                
+                if (tempStart > new Date(Date.now() + 5000)) {
+                    startTime = tempStart;
+                    isFutureStart = true;
+                }
             }
-            examEnd = new Date(start.getTime() + dur * 60000);
+
+            examStart = startTime;
+            examEnd = new Date(startTime.getTime() + dur * 60000);
+            
             $('#exam-display-title').textContent = title;
-            $('#exam-end-time-display').textContent = examEnd.toTimeString().split(' ')[0];
             $('#exam-setup-screen').classList.add('hidden');
             $('#exam-dashboard-screen').classList.remove('hidden');
+            
             isPaused = false;
-            if (examInterval) clearInterval(examInterval);
-            examInterval = setInterval(refreshTimer, 1000);
-            refreshTimer();
-        };
+            
+            if (isFutureStart) {
+                examState = 'waiting';
+                $('#exam-timer-label').textContent = "距离考试开始";
+                $('#exam-status-label').textContent = "计划开始时间";
+                $('#exam-end-time-display').textContent = examStart.toTimeString().split(' ')[0];
+                $('#exam-big-timer').classList.add('waiting');
+            } else {
+                examState = 'running';
+                $('#exam-timer-label').textContent = "考试剩余时间";
+                $('#exam-status-label').textContent = "预计结束时间";
+                $('#exam-end-time-display').textContent = examEnd.toTimeString().split(' ')[0];
+                $('#exam-big-timer').classList.remove('waiting');
+            }
+        }
+
+        $('#exam-set-btn').onclick = () => startExam(false);
+        $('#exam-start-now-btn').onclick = () => startExam(true);
 
         $('#exam-pause-btn').onclick = () => {
             if (!examEnd) return;
             isPaused = !isPaused;
+            const now = new Date();
+
             if (isPaused) {
-                pauseLeft = examEnd - new Date();
+                if (examState === 'waiting') {
+                    pauseLeftWait = examStart - now; 
+                    pauseLeft = examEnd - examStart; 
+                } else if (examState === 'running') {
+                    pauseLeft = examEnd - now;
+                }
+                
                 $('#exam-pause-btn').textContent = "继续";
                 $('#exam-pause-btn').classList.add('bg-blue-600');
             } else {
-                examEnd = new Date(Date.now() + pauseLeft);
-                $('#exam-end-time-display').textContent = examEnd.toTimeString().split(' ')[0];
+                if (examState === 'waiting') {
+                    examStart = new Date(now.getTime() + pauseLeftWait);
+                    examEnd = new Date(examStart.getTime() + pauseLeft);
+                    $('#exam-end-time-display').textContent = examStart.toTimeString().split(' ')[0];
+                } else if (examState === 'running') {
+                    examEnd = new Date(now.getTime() + pauseLeft);
+                    $('#exam-end-time-display').textContent = examEnd.toTimeString().split(' ')[0];
+                }
+
                 $('#exam-pause-btn').textContent = "暂停";
                 $('#exam-pause-btn').classList.remove('bg-blue-600');
             }
         };
 
         $('#exam-reset-btn').onclick = () => {
-            if (examInterval) clearInterval(examInterval);
-            examInterval = null;
             examEnd = null;
+            examStart = null;
             isPaused = false;
+            examState = 'idle';
+            
             $('#exam-setup-screen').classList.remove('hidden');
             $('#exam-dashboard-screen').classList.add('hidden');
             $('#exam-big-timer').textContent = "00:00";
             $('#exam-big-timer').classList.remove('critical');
+            $('#exam-big-timer').classList.remove('waiting');
             $('#exam-pause-btn').textContent = "暂停";
             $('#exam-pause-btn').classList.remove('bg-blue-600');
         };
@@ -486,16 +731,10 @@
 
         $('#sidebar-toggle').onclick = () => document.body.classList.toggle('sidebar-retracted');
 
-        // Global Ticking
-        setInterval(() => {
-            const now = new Date();
-            updateClock(now);
-            $('#exam-sys-time').textContent = now.toTimeString().split(' ')[0];
-        }, 1000);
-
-        // Pre-fill time
+        // Initial Start
         const iNow = new Date();
         $('#exam-start-input').value = `${String(iNow.getHours()).padStart(2,'0')}:${String(iNow.getMinutes()).padStart(2,'0')}`;
+        startUnifiedLoop(); // Start the loop
     </script>
 </body>
 </html>
