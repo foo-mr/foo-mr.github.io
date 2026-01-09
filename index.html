@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>符老师工具箱 (Pro Edition)</title>
+    <title>教师工具箱</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -151,8 +151,8 @@
 
     <div id="sidebar">
         <div>
-            <h1 class="brand-title">符老师工具箱</h1>
-            <p class="brand-subtitle">Created by 符老师</p>
+            <h1 class="brand-title">教师工具箱</h1>
+            <p class="brand-subtitle">Developed by 符老师</p>
         </div>
         <nav>
             <button id="nav-lucky-draw" class="nav-btn active"><span>✨</span> 幸运抽奖</button>
@@ -179,7 +179,7 @@
                 <input type="text" id="ld-name-input" class="form-input mb-4" placeholder="在此粘贴名单或输入姓名...">
                 
                 <div class="flex justify-between items-center">
-                    <button id="ld-clear-btn" class="text-red-400 font-bold hover:text-red-300 transition-colors px-2 py-1">清空名单</button>
+                    <button id="ld-clear-btn" class="btn bg-red-500 hover:bg-red-400 text-black font-bold shadow-md transition-all">清空名单</button>
                     <button id="ld-pick-btn" class="btn btn-warning px-14 text-lg shadow-lg">开始抽奖</button>
                 </div>
             </div>
@@ -206,15 +206,24 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div class="p-4 bg-slate-800/50 border border-slate-700 rounded-xl">
-                        <label id="gp-label" class="form-label text-center">需要分多少组？</label>
-                        <input type="number" id="gp-value" value="2" min="1" class="form-input text-center text-2xl font-black">
+                    <!-- Updated Number Stepper UI -->
+                    <div class="p-4 bg-slate-800/50 border border-slate-700 rounded-xl flex flex-col items-center justify-center">
+                        <label id="gp-label" class="form-label text-center mb-3">需要分多少组？</label>
+                        <div class="flex items-center gap-3">
+                            <button id="gp-btn-minus" class="w-12 h-12 rounded-xl bg-slate-700 hover:bg-slate-600 active:scale-95 text-white font-bold text-2xl transition-all border border-slate-600 shadow-md flex items-center justify-center leading-none pb-1">
+                                -
+                            </button>
+                            <input type="number" id="gp-value" value="2" min="1" class="w-20 bg-transparent text-center text-4xl font-black text-white border-none focus:ring-0 p-0 appearance-none" style="-moz-appearance: textfield;">
+                            <button id="gp-btn-plus" class="w-12 h-12 rounded-xl bg-slate-700 hover:bg-slate-600 active:scale-95 text-white font-bold text-2xl transition-all border border-slate-600 shadow-md flex items-center justify-center leading-none pb-1">
+                                +
+                            </button>
+                        </div>
                     </div>
                     <button id="gp-start-btn" class="btn btn-primary text-xl shadow-lg">执行随机分组</button>
                 </div>
 
                 <div class="flex justify-start">
-                    <button id="gp-clear-btn" class="text-red-400 font-bold hover:text-red-300 transition-colors px-2 py-1">清空名单</button>
+                    <button id="gp-clear-btn" class="btn bg-red-500 hover:bg-red-400 text-black font-bold shadow-md transition-all">清空名单</button>
                 </div>
             </div>
             
@@ -282,7 +291,7 @@
                         <div id="exam-big-timer" class="big-timer">00:00</div>
                         <div class="flex gap-4 mt-12 w-full max-w-xs">
                             <button id="exam-pause-btn" class="btn bg-slate-700 hover:bg-slate-600 flex-1 text-lg">暂停</button>
-                            <button id="exam-reset-btn" class="btn bg-red-900/40 text-red-400 border border-red-500/30 hover:bg-red-900/60 flex-1 text-lg">Reset</button>
+                            <button id="exam-reset-btn" class="btn bg-red-900/40 text-red-400 border border-red-500/30 hover:bg-red-900/60 flex-1 text-lg">重置设置</button>
                         </div>
                     </div>
                 </div>
@@ -292,7 +301,7 @@
         <!-- Footer Attribution with Auto-Year -->
         <footer class="mt-auto pt-10 pb-4 text-center">
             <p class="text-slate-600 text-xs font-medium tracking-widest uppercase">
-                &copy; <span id="footer-year"></span> 符老师工具箱 | Created by 符老师
+                &copy; <span id="footer-year"></span> 教师工具箱 | Developed by 符老师
             </p>
         </footer>
     </div>
@@ -410,6 +419,19 @@
             };
         });
 
+        // New Stepper Logic
+        $('#gp-btn-minus').onclick = () => {
+            const input = $('#gp-value');
+            let val = parseInt(input.value) || 0;
+            if (val > 1) input.value = val - 1;
+        };
+
+        $('#gp-btn-plus').onclick = () => {
+            const input = $('#gp-value');
+            let val = parseInt(input.value) || 0;
+            input.value = val + 1;
+        };
+
         $('#gp-clear-btn').onclick = () => { gpMgr.clear(); };
 
         function revealNamesOneByOne() {
@@ -519,7 +541,7 @@
             const htmlContent = `
                 <!DOCTYPE html><html lang="en">
                 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>分组结果 - 符老师工具箱</title>${styles}</head>
+                <title>分组结果 - 教师工具箱</title>${styles}</head>
                 <body>
                     <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">分组结果 (Generated Groups)</h1>
                     <div class="flex flex-wrap justify-center gap-6">${resultsHTML}</div>
