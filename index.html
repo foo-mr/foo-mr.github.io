@@ -89,17 +89,20 @@
             display: flex; gap: 0.5rem; margin-bottom: 1rem; padding: 0.75rem;
             background: rgba(30, 41, 59, 0.5); border-radius: 0.75rem; border: 1px solid #334155;
             align-items: center;
+            flex-wrap: wrap;
         }
         .class-select {
             flex-grow: 1; background: #0f172a; border: 1px solid #475569; color: white;
-            padding: 0.5rem; border-radius: 0.5rem; font-size: 0.9rem;
+            padding: 0.5rem; border-radius: 0.5rem; font-size: 0.9rem; min-width: 150px;
         }
         .class-btn {
             padding: 0.5rem 0.8rem; font-size: 0.85rem; font-weight: 600; border-radius: 0.5rem;
-            cursor: pointer; transition: all 0.2s; white-space: nowrap;
+            cursor: pointer; transition: all 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 4px;
         }
         .class-btn-save { background: #0f766e; color: #ccfbf1; }
         .class-btn-save:hover { background: #115e59; }
+        .class-btn-link { background: #4f46e5; color: #e0e7ff; }
+        .class-btn-link:hover { background: #4338ca; }
         .class-btn-del { background: #991b1b; color: #fee2e2; }
         .class-btn-del:hover { background: #7f1d1d; }
 
@@ -170,6 +173,7 @@
         .toast { background: #334155; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border-left: 4px solid #3b82f6; animation: slideIn 0.3s ease-out; font-weight: 500; display: flex; align-items: center; justify-content: space-between; min-width: 250px; }
         .toast.success { border-left-color: #10b981; }
         .toast.error { border-left-color: #ef4444; }
+        .toast.info { border-left-color: #3b82f6; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
@@ -187,7 +191,7 @@
             <button id="nav-lucky-draw" class="nav-btn active"><span>✨</span> 幸运抽奖</button>
             <button id="nav-grouping" class="nav-btn"><span>🎉</span> 随机分组</button>
             <button id="nav-exam-timer" class="nav-btn"><span>⏱️</span> 考试倒数</button>
-            <button id="nav-cloud-sync" class="nav-btn text-blue-300 hover:text-blue-100"><span>☁️</span> 数据同步</button>
+            <button id="nav-data-mgmt" class="nav-btn text-blue-300 hover:text-blue-100"><span>💾</span> 备份与恢复</button>
         </nav>
         
         <div class="mt-auto pt-6 border-t border-slate-700 text-center pb-4">
@@ -197,37 +201,37 @@
     </div>
 
     <div id="content-area">
-        <!-- App: Cloud Sync -->
-        <div id="app-cloud-sync" class="app-content">
+        <!-- App: Data Mgmt -->
+        <div id="app-data-mgmt" class="app-content">
             <div class="app-card max-w-lg mx-auto">
                 <div class="text-center mb-8">
-                    <h2 class="text-3xl font-extrabold text-white mb-2">☁️ 云端数据同步</h2>
-                    <p class="text-muted">在不同电脑间同步您的班级名单</p>
+                    <h2 class="text-3xl font-extrabold text-white mb-2">💾 数据备份与恢复</h2>
+                    <p class="text-muted">适用于 GitHub Pages / 离线环境</p>
                 </div>
 
                 <div class="bg-slate-800/50 p-6 rounded-xl border border-slate-700 space-y-6">
-                    <div>
-                        <label class="form-label text-blue-400">设置您的专属同步码 (Access Code)</label>
-                        <input type="text" id="cloud-access-code" class="form-input text-center text-xl tracking-widest font-mono font-bold border-blue-500/50 focus:border-blue-400" placeholder="例如: CLASS-5A">
-                        <p class="text-xs text-slate-500 mt-2 text-center">
-                            * 请记住此代码，在另一台电脑输入相同的代码即可同步。
-                        </p>
+                    <div class="text-sm text-slate-400">
+                        <p class="mb-2 font-bold text-blue-400">❓ 如何跨电脑使用？</p>
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li><b>方式 A (文件):</b> 在学校电脑【导出备份文件】，发送到家中电脑，然后【导入备份文件】。</li>
+                            <li><b>方式 B (链接):</b> 在【幸运抽奖】或【随机分组】页面，选中班级后点击【🔗 分享】按钮生成链接。</li>
+                        </ul>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
-                        <button id="btn-cloud-upload" class="btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 flex flex-col items-center gap-1 shadow-lg group">
-                            <span class="text-2xl group-hover:-translate-y-1 transition-transform">⬆️</span>
-                            <span>上传本机数据</span>
+                        <button id="btn-file-export" class="btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 flex flex-col items-center gap-1 shadow-lg group">
+                            <span class="text-2xl group-hover:-translate-y-1 transition-transform">📤</span>
+                            <span>导出所有数据 (JSON)</span>
                         </button>
-                        <button id="btn-cloud-download" class="btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 flex flex-col items-center gap-1 shadow-lg group">
-                            <span class="text-2xl group-hover:translate-y-1 transition-transform">⬇️</span>
-                            <span>下载云端数据</span>
-                        </button>
+                        
+                        <div class="relative w-full">
+                            <input type="file" id="file-import-input" accept=".json" class="hidden">
+                            <button id="btn-file-import" class="btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 flex flex-col items-center gap-1 shadow-lg w-full group">
+                                <span class="text-2xl group-hover:translate-y-1 transition-transform">📥</span>
+                                <span>导入数据文件</span>
+                            </button>
+                        </div>
                     </div>
-                </div>
-
-                <div class="mt-8 text-center text-slate-500 text-sm">
-                    <p>💡 提示：<br>1. 先在“幸运抽奖”或“随机分组”里输入名单并点击【保存】。<br>2. 回到这里点击【上传本机数据】。<br>3. 在另一台电脑输入相同代码点击【下载】。</p>
                 </div>
             </div>
         </div>
@@ -242,12 +246,13 @@
                 
                 <!-- Class Manager UI -->
                 <div class="class-manager-bar">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">班级名单:</span>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider hidden sm:inline">班级:</span>
                     <select id="ld-class-select" class="class-select">
                         <option value="">-- 选择班级 --</option>
                     </select>
-                    <button id="ld-save-class-btn" class="class-btn class-btn-save">💾 保存</button>
-                    <button id="ld-del-class-btn" class="class-btn class-btn-del">🗑️ 删除</button>
+                    <button id="ld-save-class-btn" class="class-btn class-btn-save" title="保存当前名单">💾 <span class="hidden sm:inline">保存</span></button>
+                    <button id="ld-share-class-btn" class="class-btn class-btn-link" title="生成分享链接">🔗 <span class="hidden sm:inline">分享</span></button>
+                    <button id="ld-del-class-btn" class="class-btn class-btn-del" title="删除班级">🗑️</button>
                 </div>
 
                 <div id="ld-tag-container" class="tag-container mb-4"></div>
@@ -275,12 +280,13 @@
                 
                 <!-- Class Manager UI -->
                 <div class="class-manager-bar">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">班级名单:</span>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider hidden sm:inline">班级:</span>
                     <select id="gp-class-select" class="class-select">
                         <option value="">-- 选择班级 --</option>
                     </select>
-                    <button id="gp-save-class-btn" class="class-btn class-btn-save">💾 保存</button>
-                    <button id="gp-del-class-btn" class="class-btn class-btn-del">🗑️ 删除</button>
+                    <button id="gp-save-class-btn" class="class-btn class-btn-save" title="保存当前名单">💾 <span class="hidden sm:inline">保存</span></button>
+                    <button id="gp-share-class-btn" class="class-btn class-btn-link" title="生成分享链接">🔗 <span class="hidden sm:inline">分享</span></button>
+                    <button id="gp-del-class-btn" class="class-btn class-btn-del" title="删除班级">🗑️</button>
                 </div>
 
                 <div id="gp-name-display" class="tag-container mb-4"></div>
@@ -401,37 +407,31 @@
         </div>
     </div>
 
-    <!-- Firebase Imports -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <!-- URL Import Modal -->
+    <div id="url-import-modal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-96 shadow-2xl">
+            <h3 class="text-xl font-bold text-white mb-2">📥 导入分享班级</h3>
+            <p id="url-import-msg" class="text-slate-300 mb-6">检测到分享的班级: <span id="url-import-name" class="font-bold text-blue-400"></span></p>
+            <div class="flex justify-end gap-3">
+                <button id="url-import-cancel" class="text-slate-400 hover:text-white px-4 py-2">忽略</button>
+                <button id="url-import-confirm" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded font-bold shadow-lg">立即导入</button>
+            </div>
+        </div>
+    </div>
 
-        // Firebase Setup
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app';
-        let db = null;
-        let auth = null;
+    <script>
+        const $ = (s, r = document) => r.querySelector(s);
+        const $$ = (s, r = document) => r.querySelectorAll(s);
 
-        // --- Correct Authentication Logic ---
-        const initAuth = async () => {
-             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                 try {
-                     await signInWithCustomToken(auth, __initial_auth_token);
-                 } catch (e) {
-                     console.warn("Custom token auth failed, falling back to anon:", e);
-                     await signInAnonymously(auth);
-                 }
-             } else {
-                 await signInAnonymously(auth);
-             }
-        };
+        // Set dynamic year in footer
+        $('#footer-year').textContent = new Date().getFullYear();
 
-        if (firebaseConfig.apiKey) {
-            const app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            initAuth().catch(e => console.error("Firebase Auth initialization failed:", e));
+        // --- Core Helpers ---
+        function runConfetti() {
+            if (typeof confetti === 'undefined') return;
+            confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+            confetti({ particleCount: 50, angle: 60, spread: 55, origin: { x: 0 } });
+            confetti({ particleCount: 50, angle: 120, spread: 55, origin: { x: 1 } });
         }
 
         // --- Toast System (Replaces Alert) ---
@@ -448,7 +448,27 @@
             }, 3000);
         };
 
-        // --- Class Data Management (Local + Cloud) ---
+        // --- Function to Refresh Dropdowns ---
+        function refreshClassDropdowns() {
+            if (!window.ClassDB) return; 
+            const classes = window.ClassDB.getClasses();
+            const selects = ['#ld-class-select', '#gp-class-select'];
+            
+            selects.forEach(selId => {
+                const el = $(selId);
+                const currentVal = el.value;
+                el.innerHTML = '<option value="">-- 加载已保存班级 --</option>';
+                Object.keys(classes).forEach(clsName => {
+                    const opt = document.createElement('option');
+                    opt.value = clsName;
+                    opt.textContent = `${clsName} (${classes[clsName].length}人)`;
+                    el.appendChild(opt);
+                });
+                if(currentVal && classes[currentVal]) el.value = currentVal; 
+            });
+        }
+
+        // --- Class Data Management (Local + File + URL) ---
         const ClassDB = {
             key: 'mr_fu_classes_v1',
             getClasses: function() {
@@ -471,120 +491,104 @@
                 }
                 return false;
             },
-            saveToCloud: async function(accessCode) {
-                if (!db || !auth.currentUser) {
-                    showToast("无法连接云端，请稍候再试 (Connecting...)", "error");
-                    return;
-                }
-                
+            // Export ALL data to a JSON file
+            exportToFile: function() {
                 const data = this.getClasses();
                 if (Object.keys(data).length === 0) {
-                    showToast("⚠️ 暂无已保存的班级！请先点击'保存'按钮将名单存入本地。", "error");
+                    showToast("⚠️ 没有可导出的数据", "error");
                     return;
                 }
-
-                try {
-                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'teacher_lists', accessCode);
-                    await setDoc(docRef, { classes: data, updatedAt: new Date().toISOString() });
-                    showToast("✅ 云端保存成功! 您可以在其他电脑下载了。", "success");
-                } catch (e) {
-                    console.error(e);
-                    showToast("保存失败: " + e.message, "error");
-                }
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `fu-teacher-backup-${new Date().toISOString().slice(0,10)}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast("✅ 备份文件已下载！", "success");
             },
-            loadFromCloud: async function(accessCode) {
-                if (!db || !auth.currentUser) {
-                    showToast("无法连接云端，请稍候再试 (Connecting...)", "error");
-                    return;
-                }
-                try {
-                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'teacher_lists', accessCode);
-                    const docSnap = await getDoc(docRef);
-                    
-                    if (docSnap.exists()) {
-                        const cloudData = docSnap.data().classes;
-                        const count = Object.keys(cloudData).length;
-                        localStorage.setItem(this.key, JSON.stringify(cloudData));
-                        showToast(`✅ 同步成功！已获取 ${count} 个班级名单。`, "success");
-                        return true;
-                    } else {
-                        showToast("❌ 找不到此同步码的数据", "error");
-                        return false;
+            // Import data from a JSON file
+            importFromFile: function(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (typeof data === 'object' && data !== null) {
+                            const current = this.getClasses();
+                            const merged = { ...current, ...data };
+                            localStorage.setItem(this.key, JSON.stringify(merged));
+                            refreshClassDropdowns();
+                            showToast(`✅ 成功恢复 ${Object.keys(data).length} 个班级！`, "success");
+                        } else {
+                            throw new Error("Invalid format");
+                        }
+                    } catch (err) {
+                        showToast("❌ 文件格式错误，无法导入", "error");
                     }
-                } catch (e) {
-                    console.error(e);
-                    showToast("下载失败: " + e.message, "error");
-                    return false;
+                };
+                reader.readAsText(file);
+            },
+            // Magic Link Logic
+            generateLink: function(name) {
+                const classes = this.getClasses();
+                if(!classes[name]) return null;
+                // Simple B64 encoding of JSON string
+                const dataStr = JSON.stringify({ n: name, l: classes[name] });
+                const encoded = btoa(encodeURIComponent(dataStr));
+                const url = `${window.location.protocol}//${window.location.host}${window.location.pathname}?data=${encoded}`;
+                return url;
+            }
+        };
+
+        window.ClassDB = ClassDB;
+
+        // --- File Backup UI Logic ---
+        $('#btn-file-export').onclick = () => ClassDB.exportToFile();
+        $('#btn-file-import').onclick = () => $('#file-import-input').click();
+        $('#file-import-input').onchange = (e) => {
+            if (e.target.files.length > 0) {
+                ClassDB.importFromFile(e.target.files[0]);
+                e.target.value = '';
+            }
+        };
+
+        // --- URL Import Checker ---
+        window.addEventListener('load', () => {
+            const params = new URLSearchParams(window.location.search);
+            const dataParam = params.get('data');
+            if(dataParam) {
+                try {
+                    const decoded = decodeURIComponent(atob(dataParam));
+                    const importData = JSON.parse(decoded);
+                    if(importData.n && importData.l) {
+                        $('#url-import-name').textContent = importData.n;
+                        $('#url-import-modal').classList.remove('hidden');
+                        
+                        $('#url-import-confirm').onclick = () => {
+                            ClassDB.saveClass(importData.n, importData.l);
+                            refreshClassDropdowns();
+                            $('#url-import-modal').classList.add('hidden');
+                            showToast(`✅ 班级 "${importData.n}" 已导入！`, "success");
+                            // Clear URL
+                            window.history.replaceState({}, document.title, window.location.pathname);
+                        };
+                        
+                        $('#url-import-cancel').onclick = () => {
+                            $('#url-import-modal').classList.add('hidden');
+                            window.history.replaceState({}, document.title, window.location.pathname);
+                        };
+                    }
+                } catch(e) {
+                    console.error("Link Parse Error", e);
                 }
             }
-        };
-
-        // --- Cloud UI Logic (Updated for New Page) ---
-        document.getElementById('btn-cloud-upload').onclick = async () => {
-            const code = document.getElementById('cloud-access-code').value.trim();
-            if (!code) return showToast("请输入同步码 (Access Code)", "error");
-            await ClassDB.saveToCloud(code);
-        };
-
-        document.getElementById('btn-cloud-download').onclick = async () => {
-            const code = document.getElementById('cloud-access-code').value.trim();
-            if (!code) return showToast("请输入同步码 (Access Code)", "error");
-            
-            showToast("正在同步云端数据...", "success"); 
-            
-            const success = await ClassDB.loadFromCloud(code);
-            if(success) {
-                const event = new Event('classesUpdated');
-                document.dispatchEvent(event);
-            }
-        };
-
-        // --- Expose for legacy script access ---
-        window.ClassDB = ClassDB;
-    </script>
-
-    <script>
-        const $ = (s, r = document) => r.querySelector(s);
-        const $$ = (s, r = document) => r.querySelectorAll(s);
-
-        // Set dynamic year in footer
-        $('#footer-year').textContent = new Date().getFullYear();
-
-        // --- Core Helpers ---
-        function runConfetti() {
-            if (typeof confetti === 'undefined') return;
-            confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
-            confetti({ particleCount: 50, angle: 60, spread: 55, origin: { x: 0 } });
-            confetti({ particleCount: 50, angle: 120, spread: 55, origin: { x: 1 } });
-        }
-
-        // --- Function to Refresh Dropdowns ---
-        function refreshClassDropdowns() {
-            if (!window.ClassDB) return; 
-            const classes = window.ClassDB.getClasses();
-            const selects = ['#ld-class-select', '#gp-class-select'];
-            
-            selects.forEach(selId => {
-                const el = $(selId);
-                const currentVal = el.value;
-                el.innerHTML = '<option value="">-- 加载已保存班级 --</option>';
-                Object.keys(classes).forEach(clsName => {
-                    const opt = document.createElement('option');
-                    opt.value = clsName;
-                    opt.textContent = `${clsName} (${classes[clsName].length}人)`;
-                    el.appendChild(opt);
-                });
-                if(currentVal && classes[currentVal]) el.value = currentVal; 
-            });
-        }
-        
-        document.addEventListener('classesUpdated', refreshClassDropdowns);
+        });
 
         // --- Name System Manager ---
         let pendingSaveList = null;
         let pendingSelectId = null;
 
-        function createNameManager(inputId, containerId, pickBtnId = null, selectId = null, saveBtnId = null, delBtnId = null) {
+        function createNameManager(inputId, containerId, pickBtnId = null, selectId = null, saveBtnId = null, shareBtnId = null, delBtnId = null) {
             const list = [];
             const input = $(inputId);
             const container = $(containerId);
@@ -633,15 +637,33 @@
             if (saveBtnId) {
                 $(saveBtnId).onclick = () => {
                     if (list.length === 0) return showToast("名单为空，无法保存", "error");
-                    
-                    // Show Custom Modal
                     $('#save-class-name-input').value = '';
                     $('#save-class-modal').classList.remove('hidden');
                     $('#save-class-name-input').focus();
-                    
-                    // Store context for the modal to use
                     pendingSaveList = list;
                     pendingSelectId = selectId;
+                };
+            }
+
+            if (shareBtnId) {
+                $(shareBtnId).onclick = () => {
+                    const clsName = $(selectId).value;
+                    if (!clsName) return showToast("请先在左侧选择一个班级", "error");
+                    const link = ClassDB.generateLink(clsName);
+                    if (link) {
+                        // Copy to clipboard fallback
+                        const textArea = document.createElement("textarea");
+                        textArea.value = link;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        try {
+                            document.execCommand('copy');
+                            showToast("🔗 链接已复制！发送给另一台电脑即可导入", "info");
+                        } catch (err) {
+                            prompt("请复制此链接分享:", link);
+                        }
+                        document.body.removeChild(textArea);
+                    }
                 };
             }
 
@@ -650,12 +672,10 @@
                     const selectEl = $(selectId);
                     const clsName = selectEl.value;
                     if (!clsName) return showToast("请先选择要删除的班级", "error");
-                    
-                    // REMOVED confirm() to fix blocking issue
                     if(window.ClassDB) {
                         window.ClassDB.deleteClass(clsName);
                         refreshClassDropdowns();
-                        selectEl.value = ""; // Reset selection
+                        selectEl.value = ""; 
                         showToast(`已删除班级: ${clsName}`, "success");
                     }
                 };
@@ -691,6 +711,7 @@
             '#ld-pick-btn',
             '#ld-class-select',
             '#ld-save-class-btn',
+            '#ld-share-class-btn',
             '#ld-del-class-btn'
         );
         let shuffleInterval = null;
@@ -741,6 +762,7 @@
             '#gp-start-btn',
             '#gp-class-select',
             '#gp-save-class-btn',
+            '#gp-share-class-btn',
             '#gp-del-class-btn'
         );
         let gpMode = 'count';
@@ -889,7 +911,7 @@
             try {
                 const canvas = await html2canvas(container, {
                     scale: 2,
-                    backgroundColor: '#1f2937', // Dark background for the image to match vibe
+                    backgroundColor: '#1f2937', 
                     logging: false,
                     useCORS: true
                 });
