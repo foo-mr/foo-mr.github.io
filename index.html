@@ -205,33 +205,46 @@
         <div id="app-data-mgmt" class="app-content">
             <div class="app-card max-w-lg mx-auto">
                 <div class="text-center mb-8">
-                    <h2 class="text-3xl font-extrabold text-white mb-2">💾 数据备份与恢复</h2>
-                    <p class="text-muted">适用于 GitHub Pages / 离线环境</p>
+                    <h2 class="text-3xl font-extrabold text-white mb-2">💾 数据备份与分享</h2>
+                    <p class="text-muted">适用于 GitHub Pages / 离线环境 / 跨电脑迁移</p>
                 </div>
 
                 <div class="bg-slate-800/50 p-6 rounded-xl border border-slate-700 space-y-6">
                     <div class="text-sm text-slate-400">
-                        <p class="mb-2 font-bold text-blue-400">❓ 如何跨电脑使用？</p>
+                        <p class="mb-2 font-bold text-blue-400">❓ 如何一次性分享所有班级？</p>
                         <ul class="list-disc pl-5 space-y-1">
-                            <li><b>方式 A (文件):</b> 在学校电脑【导出备份文件】，发送到家中电脑，然后【导入备份文件】。</li>
-                            <li><b>方式 B (链接):</b> 在【幸运抽奖】或【随机分组】页面，选中班级后点击【🔗 分享】按钮生成链接。</li>
+                            <li><b>推荐方式 (文件):</b> 点击下方【导出所有数据】，将下载的文件发送给对方，对方【导入】即可。这是最稳定、无限制的方式。</li>
+                            <li><b>便捷方式 (链接):</b> 尝试点击下方【生成全量链接】，如果数据不多，可以直接生成一个链接发送。</li>
                         </ul>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <button id="btn-file-export" class="btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 flex flex-col items-center gap-1 shadow-lg group">
-                            <span class="text-2xl group-hover:-translate-y-1 transition-transform">📤</span>
-                            <span>导出所有数据 (JSON)</span>
-                        </button>
-                        
-                        <div class="relative w-full">
-                            <input type="file" id="file-import-input" accept=".json" class="hidden">
-                            <button id="btn-file-import" class="btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 flex flex-col items-center gap-1 shadow-lg w-full group">
-                                <span class="text-2xl group-hover:translate-y-1 transition-transform">📥</span>
-                                <span>导入数据文件</span>
+                    <!-- Action Buttons -->
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <button id="btn-file-export" class="btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 flex flex-col items-center gap-1 shadow-lg group">
+                                <span class="text-2xl group-hover:-translate-y-1 transition-transform">📤</span>
+                                <span>导出所有数据 (文件)</span>
                             </button>
+                            
+                            <div class="relative w-full">
+                                <input type="file" id="file-import-input" accept=".json" class="hidden">
+                                <button id="btn-file-import" class="btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 flex flex-col items-center gap-1 shadow-lg w-full group">
+                                    <span class="text-2xl group-hover:translate-y-1 transition-transform">📥</span>
+                                    <span>导入数据文件</span>
+                                </button>
+                            </div>
                         </div>
+
+                        <!-- New Share All Link Button -->
+                        <button id="btn-share-all-link" class="btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 w-full flex items-center justify-center gap-2 shadow-lg group">
+                            <span>🔗</span>
+                            <span>尝试生成“全班级”分享链接</span>
+                        </button>
                     </div>
+                </div>
+
+                <div class="mt-8 text-center text-slate-500 text-sm">
+                    <p>💡 提示：先在“幸运抽奖”或“随机分组”保存班级，然后来这里操作。</p>
                 </div>
             </div>
         </div>
@@ -410,8 +423,8 @@
     <!-- URL Import Modal -->
     <div id="url-import-modal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50">
         <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-96 shadow-2xl">
-            <h3 class="text-xl font-bold text-white mb-2">📥 导入分享班级</h3>
-            <p id="url-import-msg" class="text-slate-300 mb-6">检测到分享的班级: <span id="url-import-name" class="font-bold text-blue-400"></span></p>
+            <h3 class="text-xl font-bold text-white mb-2">📥 导入分享数据</h3>
+            <p id="url-import-msg" class="text-slate-300 mb-6 text-sm leading-relaxed"></p>
             <div class="flex justify-end gap-3">
                 <button id="url-import-cancel" class="text-slate-400 hover:text-white px-4 py-2">忽略</button>
                 <button id="url-import-confirm" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded font-bold shadow-lg">立即导入</button>
@@ -528,15 +541,28 @@
                 };
                 reader.readAsText(file);
             },
-            // Magic Link Logic
+            // Magic Link Logic (Single Class)
             generateLink: function(name) {
                 const classes = this.getClasses();
                 if(!classes[name]) return null;
-                // Simple B64 encoding of JSON string
                 const dataStr = JSON.stringify({ n: name, l: classes[name] });
                 const encoded = btoa(encodeURIComponent(dataStr));
+                return `${window.location.protocol}//${window.location.host}${window.location.pathname}?data=${encoded}`;
+            },
+            // Magic Link Logic (All Classes)
+            generateAllLink: function() {
+                const data = this.getClasses();
+                if (Object.keys(data).length === 0) return { error: "⚠️ 没有可分享的数据" };
+                
+                const dataStr = JSON.stringify({ all: data });
+                const encoded = btoa(encodeURIComponent(dataStr));
                 const url = `${window.location.protocol}//${window.location.host}${window.location.pathname}?data=${encoded}`;
-                return url;
+                
+                // Browser URL length safety check (approx 2000 chars is safe limit)
+                if (url.length > 2000) {
+                    return { error: "⚠️ 数据量过大，链接太长无法生成。\n\n请使用上方蓝色的【📤 导出所有数据 (文件)】功能来分享。" };
+                }
+                return { url: url };
             }
         };
 
@@ -552,7 +578,27 @@
             }
         };
 
-        // --- URL Import Checker ---
+        // --- Share All Link UI Logic ---
+        $('#btn-share-all-link').onclick = () => {
+            const result = ClassDB.generateAllLink();
+            if (result.error) {
+                alert(result.error);
+            } else {
+                const textArea = document.createElement("textarea");
+                textArea.value = result.url;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast("🔗 全量链接已复制！发送给别人即可导入所有班级。", "info");
+                } catch (err) {
+                    prompt("请复制此链接分享:", result.url);
+                }
+                document.body.removeChild(textArea);
+            }
+        };
+
+        // --- URL Import Checker (Enhanced) ---
         window.addEventListener('load', () => {
             const params = new URLSearchParams(window.location.search);
             const dataParam = params.get('data');
@@ -560,24 +606,44 @@
                 try {
                     const decoded = decodeURIComponent(atob(dataParam));
                     const importData = JSON.parse(decoded);
+                    const msgEl = $('#url-import-msg');
+                    const modal = $('#url-import-modal');
+                    
+                    // Case 1: Single Class
                     if(importData.n && importData.l) {
-                        $('#url-import-name').textContent = importData.n;
-                        $('#url-import-modal').classList.remove('hidden');
+                        msgEl.innerHTML = `检测到分享的班级: <span class="font-bold text-blue-400 block mt-2 text-lg">${importData.n} (${importData.l.length}人)</span>`;
+                        modal.classList.remove('hidden');
                         
                         $('#url-import-confirm').onclick = () => {
                             ClassDB.saveClass(importData.n, importData.l);
                             refreshClassDropdowns();
-                            $('#url-import-modal').classList.add('hidden');
+                            modal.classList.add('hidden');
                             showToast(`✅ 班级 "${importData.n}" 已导入！`, "success");
-                            // Clear URL
                             window.history.replaceState({}, document.title, window.location.pathname);
                         };
-                        
-                        $('#url-import-cancel').onclick = () => {
-                            $('#url-import-modal').classList.add('hidden');
+                    } 
+                    // Case 2: All Classes (Batch Import)
+                    else if (importData.all) {
+                        const count = Object.keys(importData.all).length;
+                        msgEl.innerHTML = `检测到批量分享的数据包: <span class="font-bold text-blue-400 block mt-2 text-lg">共 ${count} 个班级</span><br>导入将合并到您的现有数据中。`;
+                        modal.classList.remove('hidden');
+
+                        $('#url-import-confirm').onclick = () => {
+                            const current = ClassDB.getClasses();
+                            const merged = { ...current, ...importData.all };
+                            localStorage.setItem(ClassDB.key, JSON.stringify(merged));
+                            refreshClassDropdowns();
+                            modal.classList.add('hidden');
+                            showToast(`✅ 成功导入 ${count} 个班级！`, "success");
                             window.history.replaceState({}, document.title, window.location.pathname);
                         };
                     }
+
+                    $('#url-import-cancel').onclick = () => {
+                        modal.classList.add('hidden');
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    };
+
                 } catch(e) {
                     console.error("Link Parse Error", e);
                 }
